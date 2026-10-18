@@ -1,5 +1,15 @@
 # Supabase setup and migration
 
+## Troubleshooting `ERR_NAME_NOT_RESOLVED`
+
+Run `npm run supabase:status`. When `SUPABASE_ACCESS_TOKEN` is configured, this read-only command checks project state through the Management API before attempting database requests. `INACTIVE` means the project is paused; select the existing project in the Supabase dashboard and choose **Resume project**. Wait for `ACTIVE_HEALTHY`, rerun the status check, then reload the application. `COMING_UP` means startup is still in progress.
+
+A paused project can stop resolving its hostname, causing catalog fetch failures, Auth token refresh errors and repeated Realtime WebSocket failures together. Changing passwords, replacing keys, reseeding the database or switching to mock data does not resolve this cause. If the project is healthy but DNS still fails, check the configured project URL and local DNS/network. See [Supabase's DNS troubleshooting guide](https://supabase.com/docs/guides/troubleshooting/nxdomain-error-connecting-to-a-supabase-project).
+
+Free-plan projects can pause after low activity. For production availability, review [Supabase's project pausing policy](https://supabase.com/docs/guides/platform/free-project-pausing).
+
+## Existing database setup
+
 Migrations through `202610030002_property_management.sql` were applied to the configured hosted project on 2026-10-03. They add agent/property audit history, protected CRUD and archive commands, atomic bulk assignment, inactive-account restrictions, and property version checks. Both private command implementations deny direct authenticated execution; property audit RLS and the version trigger were verified on the hosted database. Deploy the matching frontend with the property migration: property updates and deletion now require `expectedVersion`. See [CRM_IMPROVEMENTS.md](CRM_IMPROVEMENTS.md) for behavior and acceptance-test results.
 
 The application now has a Supabase backend adapter as well as its offline mock adapter. The connected mode does **not** fall back to local mock records when a database request fails. Database creation and seed import must finish before connected public pages can load.

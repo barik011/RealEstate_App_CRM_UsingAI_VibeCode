@@ -1,7 +1,9 @@
 import { LanguageSwitch, useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowUp, Heart, Menu, Search } from 'lucide-react';
+import { ArrowUp, Heart, Menu, Search, UserRound } from 'lucide-react';
+import { homeFor } from '../../features/crm/constants';
+import { hasWorkspaceAccess } from '../../features/crm/permissions';
 import { Instagram, Linkedin, Youtube, Facebook } from './SocialIcons';
 import { useSelector } from 'react-redux';
 import { useCatalog } from '../../hooks/useCatalog';
@@ -97,6 +99,8 @@ export default function Layout() {
   const [search, setSearch] = useState(false);
   const [menu, setMenu] = useState(false);
   const count = useSelector((state) => state.favorites.ids.length);
+  const user = useSelector((state) => state.auth.user);
+  const workspaceLink = hasWorkspaceAccess(user) ? homeFor(user) : '/agent/login';
   const { categories, locations } = useCatalog();
   useEffect(() => {
     const change = () => setScrolled(window.scrollY > 30);
@@ -127,6 +131,14 @@ export default function Layout() {
           ))}
         </nav>
         <div className="header-actions">
+          <Link
+            className="icon-button"
+            to={workspaceLink}
+            aria-label={t(hasWorkspaceAccess(user) ? 'My workspace' : 'Agent login')}
+            title={t(hasWorkspaceAccess(user) ? 'My workspace' : 'Agent login')}
+          >
+            <UserRound size={20} />
+          </Link>
           <LanguageSwitch />
           <button
             className="icon-button"
@@ -165,7 +177,11 @@ export default function Layout() {
         className="mobile-menu"
       >
         <nav aria-label={t('Mobile navigation')}>
-          {[...nav, ['/favorites', `Saved properties (${count})`]].map(([to, label]) => (
+          {[
+            ...nav,
+            ['/favorites', `Saved properties (${count})`],
+            [workspaceLink, hasWorkspaceAccess(user) ? 'My workspace' : 'Agent login'],
+          ].map(([to, label]) => (
             <NavLink key={to} to={to} onClick={() => setMenu(false)}>
               {t(label)}
             </NavLink>

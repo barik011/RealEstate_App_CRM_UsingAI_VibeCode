@@ -18,6 +18,7 @@ import {
   LogOut,
   ChevronRight,
   RefreshCw,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   selectUser,
@@ -43,6 +44,7 @@ const adminNav = [
   ['tasks', 'Tasks', ListTodo],
   ['reports', 'Reports', ChartNoAxesCombined],
   ['settings', 'Settings', Settings],
+  ['permissions', 'Permissions', ShieldCheck],
 ];
 const agentNav = [
   ['dashboard', 'Dashboard', LayoutDashboard],
@@ -51,6 +53,7 @@ const agentNav = [
   ['viewings', 'Viewings', CalendarDays],
   ['calendar', 'Calendar', CalendarDays],
   ['profile', 'Profile', UserRound],
+  ['permissions', 'My permissions', ShieldCheck],
 ];
 function Sidebar({ admin, base, onNavigate, collapsed }) {
   return (

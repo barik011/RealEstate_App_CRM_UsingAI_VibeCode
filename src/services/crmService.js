@@ -3,6 +3,7 @@ import { authService } from './authService.js';
 import { isSupabase } from './supabase/client.js';
 import { supabaseCRM } from './supabase/crm.js';
 import { agentImpact, validateAgent } from '../features/crm/agentRules.js';
+import { hasWorkspaceAccess } from '../features/crm/permissions.js';
 import {
   propertyImpact,
   assertPropertyVersion,
@@ -58,6 +59,8 @@ const assertOpen = (lead) => {
 // All workflow rules and their side effects run in one transaction. A future
 // backend adapter should preserve this contract with database transactions/RPCs.
 export function applyCommand(data, command, payload, user) {
+  if (command !== 'inquiry' && !hasWorkspaceAccess(user))
+    throw new Error('An authorized workspace account is required.');
   if (
     command !== 'inquiry' &&
     user?.role === 'AGENT' &&

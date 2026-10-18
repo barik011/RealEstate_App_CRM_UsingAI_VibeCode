@@ -1,4 +1,5 @@
 import { requireSupabase, backendError } from './client.js';
+import { hasWorkspaceAccess } from '../../features/crm/permissions.js';
 let current = null;
 let authSubscription;
 let sequence = 0;
@@ -21,7 +22,7 @@ async function profileFor(session) {
     if (agentError) throw backendError(agentError);
     if (!agent) return null;
   }
-  return data
+  return hasWorkspaceAccess({ ...data, agentId: data?.agent_id })
     ? {
         id: data.id,
         name: data.name,

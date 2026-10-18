@@ -34,7 +34,7 @@ export function AuthLayout() {
     </div>
   );
 }
-export function Login() {
+export function Login({ portal }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,8 +62,23 @@ export function Login() {
         <ArrowLeft size={16} /> Back to properties
       </Link>
       <span className="crm-demo">{isSupabase ? 'Supabase workspace' : 'Demo Mode'}</span>
-      <h1>Welcome back.</h1>
-      <p>Sign in to your real estate workspace.</p>
+      <h1>
+        {portal === 'AGENT'
+          ? 'Agent login'
+          : portal === 'ADMIN'
+            ? 'Administrator login'
+            : 'Welcome back.'}
+      </h1>
+      <p>
+        {portal === 'AGENT'
+          ? 'Manage your assigned leads, follow-ups and property viewings.'
+          : 'Sign in to your real estate workspace.'}
+      </p>
+      <p className="crm-muted">Your account determines your workspace and permissions.</p>
+      <nav className="crm-actions" aria-label="Login options">
+        <Link to="/agent/login">Agent login</Link>
+        <Link to="/admin/login">Administrator login</Link>
+      </nav>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -100,7 +115,7 @@ export function Login() {
           </p>
         )}
         <Button type="submit" disabled={pending}>
-          Sign in
+          {pending ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
       {!isSupabase && (

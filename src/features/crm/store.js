@@ -3,6 +3,7 @@ import { authService } from '../../services/authService.js';
 import { crmService } from '../../services/crmService.js';
 import { storage } from '../../utils/storage.js';
 import { canAccessLead, canAccessWork, isAdmin, taskStatus, dateKey } from './constants.js';
+import { hasWorkspaceAccess, ownsRecord } from './permissions.js';
 const empty = {
   leads: [],
   properties: [],
@@ -89,6 +90,7 @@ export async function initializeCRM(store) {
 export const selectUser = (state) => state.auth.user;
 export const selectCRM = (state) => state.crm;
 export const selectWorkspace = createSelector([selectCRM, selectUser], (data, user) => {
+  if (!hasWorkspaceAccess(user)) return { ...empty, loading: data.loading, error: data.error };
   const leads = data.leads.filter((lead) => canAccessLead(user, lead));
   const ids = new Set(leads.map((lead) => lead.id));
   return {
@@ -98,7 +100,7 @@ export const selectWorkspace = createSelector([selectCRM, selectUser], (data, us
     leads,
     tasks: data.tasks.filter((t) => ids.has(t.leadId) && canAccessWork(user, t)),
     viewings: data.viewings.filter((v) => ids.has(v.leadId) && canAccessWork(user, v)),
-    agents: data.agents.filter((a) => isAdmin(user) || a.id === user?.agentId),
+    agents: data.agents.filter((a) => isAdmin(user) || ownsRecord(user, a.id)),
     notes: data.notes.filter((n) => ids.has(n.leadId)),
     activities: data.activities.filter((a) => ids.has(a.leadId)),
     notifications: data.notifications.filter(

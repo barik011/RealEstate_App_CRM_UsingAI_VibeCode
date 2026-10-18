@@ -2,26 +2,41 @@ import { useSelector } from 'react-redux';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { selectUser } from '../crm/store';
 import { homeFor } from '../crm/constants';
+import { hasWorkspaceAccess } from '../crm/permissions';
 export function ProtectedRoute() {
   const user = useSelector(selectUser);
   const loading = useSelector((state) => state.auth.loading);
-  const agentActive = useSelector(
-    (state) =>
-      state.crm.loading ||
-      Boolean(state.crm.error) ||
-      state.crm.agents.some((agent) => agent.id === user?.agentId && agent.status === 'ACTIVE'),
+  const crmLoading = useSelector((state) => state.crm.loading);
+  const crmError = useSelector((state) => state.crm.error);
+  const agentActive = useSelector((state) =>
+    state.crm.agents.some((agent) => agent.id === user?.agentId && agent.status === 'ACTIVE'),
   );
   const location = useLocation();
-  if (loading)
+  if (loading || (user?.role === 'AGENT' && crmLoading))
     return (
       <div className="crm-skeleton" role="status">
         Restoring your session…
       </div>
     );
-  return user && (user.role !== 'AGENT' || agentActive) ? (
+  if (user?.role === 'AGENT' && crmError)
+    return (
+      <div className="crm crm-denied" dir="ltr">
+        <h1>Unable to verify workspace access</h1>
+        <p role="alert">Your account status could not be checked. Please retry.</p>
+        <button className="crm-button" onClick={() => window.location.reload()}>
+          Retry
+        </button>
+        <Link to="/login">Back to login</Link>
+      </div>
+    );
+  return hasWorkspaceAccess(user) && (user.role !== 'AGENT' || agentActive) ? (
     <Outlet />
   ) : (
-    <Navigate to="/login" state={{ from: location.pathname }} replace />
+    <Navigate
+      to="/login"
+      state={{ from: location.pathname + location.search + location.hash }}
+      replace
+    />
   );
 }
 export function RoleGuard({ role }) {

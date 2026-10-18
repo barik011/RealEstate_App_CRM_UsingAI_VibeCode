@@ -1,3 +1,4 @@
+import { hasWorkspaceAccess, ownsRecord } from './permissions.js';
 export const STAGES = [
   'NEW',
   'ASSIGNED',
@@ -67,9 +68,14 @@ export const taskStatus = (task) =>
     : new Date(task.dueDate) < new Date()
       ? 'OVERDUE'
       : task.status;
-export const homeFor = (user) => (user?.role === 'ADMIN' ? '/admin/dashboard' : '/agent/dashboard');
-export const isAdmin = (user) => user?.role === 'ADMIN';
+export const homeFor = (user) =>
+  !hasWorkspaceAccess(user)
+    ? '/login'
+    : user.role === 'ADMIN'
+      ? '/admin/dashboard'
+      : '/agent/dashboard';
+export const isAdmin = (user) => hasWorkspaceAccess(user) && user.role === 'ADMIN';
 export const canAccessLead = (user, lead) =>
-  Boolean(user && lead && (isAdmin(user) || lead.assignedAgentId === user.agentId));
+  Boolean(lead && (isAdmin(user) || ownsRecord(user, lead.assignedAgentId)));
 export const canAccessWork = (user, record) =>
-  Boolean(user && (isAdmin(user) || record.agentId === user.agentId));
+  Boolean(record && (isAdmin(user) || ownsRecord(user, record.agentId)));

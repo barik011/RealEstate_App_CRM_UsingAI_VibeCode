@@ -32,6 +32,7 @@ const Agents = crmPage('Agents', 'Agents');
 const AgentDetail = crmPage('Agents', 'AgentDetail');
 const Profile = crmPage('Agents', 'Profile');
 const Settings = crmPage('Settings', 'Settings');
+const Permissions = crmPage('Permissions', 'Permissions');
 const Home = lazy(() => import('./pages/Home'));
 const Properties = lazy(() => import('./pages/Properties'));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
@@ -99,6 +100,8 @@ export default function App() {
             <Routes>
               <Route element={<AuthLayout />}>
                 <Route path="login" element={<Login />} />
+                <Route path="agent/login" element={<Login portal="AGENT" />} />
+                <Route path="admin/login" element={<Login portal="ADMIN" />} />
                 <Route path="forgot-password" element={<ForgotPassword />} />
                 <Route path="reset-password" element={<ResetPassword />} />
               </Route>
@@ -116,6 +119,7 @@ export default function App() {
                     <Route path="tasks" element={<Tasks />} />
                     <Route path="reports" element={<Reports />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="permissions" element={<Permissions />} />
                     <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
                   </Route>
                 </Route>
@@ -129,6 +133,7 @@ export default function App() {
                     <Route path="viewings" element={<Viewings />} />
                     <Route path="calendar" element={<Calendar />} />
                     <Route path="profile" element={<Profile />} />
+                    <Route path="permissions" element={<Permissions />} />
                     <Route path="*" element={<Navigate to="/agent/dashboard" replace />} />
                   </Route>
                 </Route>

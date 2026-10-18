@@ -54,6 +54,9 @@ export function Agents() {
         title="Our agents"
         subtitle="Manage your team, availability and assigned workload."
       >
+        <Button to="/admin/permissions" secondary>
+          Login setup & permissions
+        </Button>
         <Button
           className="crm-icon-action"
           aria-label="Add agent"

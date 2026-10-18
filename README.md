@@ -114,7 +114,11 @@ PublicLayout (wrapping the original Layout component), AuthLayout, AgentLayout a
 
 One-click demo login buttons are on `/login`, also reachable from the public footer. Normal login supports Remember Me (localStorage); otherwise the session uses sessionStorage. Forgot Password explains the demo credentials and sends no email.
 
-Frontend authentication, selectors and route guards are demonstration UX controls, **not production security**. All demo records exist in the browser. Real authorization requires Supabase Auth and RLS in the next phase.
+Mock authentication, selectors and route guards are demonstration UX controls, **not production security**. All demo records exist in the browser. In connected mode, the implemented Supabase Auth, database RLS and transactional command checks enforce authorization.
+
+Agent login is available from the public header and mobile navigation at `/agent/login`; administrators can use `/admin/login`. The shared `/login` route remains supported. Both login pages use the authenticated account's actual role and cannot grant a different role. Successful login restores authorized deep links, including filters.
+
+Administrators can inspect the role matrix and account setup guidance at `/admin/permissions`; agents can inspect their access at `/agent/permissions`. Creating an agent directory entry does not create a Supabase Auth account: follow the invitation/account linking steps in [SUPABASE_SETUP.md](SUPABASE_SETUP.md). See [PROJECT_REVIEW.md](PROJECT_REVIEW.md) for the current review, delivered improvements and remaining priorities.
 
 ### Working CRM modules
 
