@@ -1,3 +1,4 @@
+import { SearchTools } from '../components/property/PropertyTools';
 import { useLanguage } from '../i18n/LanguageProvider';
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { siteConfig } from '../config/siteConfig';
 import { Breadcrumb, Button, EmptyState, SEO } from '../components/ui';
 import { PropertyGrid } from '../components/property/PropertyCard';
 import NotFound from './NotFound';
-function FilterPanel({ filters, update, reset, locations, categories }) {
+function FilterPanel({ filters, update, reset, locations, categories, amenities }) {
   const { t } = useLanguage();
   return (
     <div className="filter-fields">
@@ -118,6 +119,42 @@ function FilterPanel({ filters, update, reset, locations, categories }) {
           ))}
         </select>
       </label>
+      {siteConfig.advancedFiltersEnabled !== false && (
+        <>
+          <label>
+            {t('Minimum area (sq ft)')}
+            <input
+              type="number"
+              min="0"
+              value={filters.minArea || ''}
+              onChange={(e) => update('minArea', e.target.value)}
+            />
+          </label>
+          <label>
+            {t('Maximum area (sq ft)')}
+            <input
+              type="number"
+              min="0"
+              value={filters.maxArea || ''}
+              onChange={(e) => update('maxArea', e.target.value)}
+            />
+          </label>
+          <label>
+            {t('Amenity')}
+            <select
+              value={filters.amenity || ''}
+              onChange={(e) => update('amenity', e.target.value)}
+            >
+              <option value="">{t('Any')}</option>
+              {amenities.map((a) => (
+                <option key={a} value={a}>
+                  {t(a)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
       <button className="reset-filters" onClick={reset}>
         <X size={14} />
         {t('Reset filters')}
@@ -207,8 +244,19 @@ export default function Properties({ favorites = false, search = false }) {
           reset={() => setParams({})}
           locations={locations}
           categories={categories}
+          amenities={[...new Set(properties.flatMap((p) => p.amenities || []))].sort()}
         />
       </div>
+      <SearchTools
+        filters={filters}
+        onRestore={(saved) =>
+          setParams(
+            Object.fromEntries(
+              Object.entries(saved).filter(([, v]) => v !== undefined && v !== null),
+            ),
+          )
+        }
+      />
       <div className="results-toolbar">
         <p>
           <strong>{t(results.length)}</strong> {t(results.length === 1 ? 'property' : 'properties')}
@@ -273,7 +321,20 @@ export default function Properties({ favorites = false, search = false }) {
       )}
       {totalPages > 1 && (
         <nav className="pagination" aria-label={t('Property pages')}>
-          <button disabled={page === 1} onClick={() => update('page', String(page - 1))}>
+          <button
+            disabled={page === 1}
+            onClick={() =>
+              update(
+                'page',
+                String(
+                  Math.max(
+                    1,
+                    (Number(new URLSearchParams(window.location.search).get('page')) || 1) - 1,
+                  ),
+                ),
+              )
+            }
+          >
             {t('Previous')}
           </button>
           {t(
@@ -293,7 +354,20 @@ export default function Properties({ favorites = false, search = false }) {
               ),
             ),
           )}
-          <button disabled={page === totalPages} onClick={() => update('page', String(page + 1))}>
+          <button
+            disabled={page === totalPages}
+            onClick={() =>
+              update(
+                'page',
+                String(
+                  Math.min(
+                    totalPages,
+                    (Number(new URLSearchParams(window.location.search).get('page')) || 1) + 1,
+                  ),
+                ),
+              )
+            }
+          >
             {t('Next')}
           </button>
         </nav>

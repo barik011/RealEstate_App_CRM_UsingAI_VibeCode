@@ -33,7 +33,9 @@ const AgentDetail = crmPage('Agents', 'AgentDetail');
 const Profile = crmPage('Agents', 'Profile');
 const Settings = crmPage('Settings', 'Settings');
 const Permissions = crmPage('Permissions', 'Permissions');
+const Website = crmPage('Website', 'Website');
 const Accounts = crmPage('Accounts', 'Accounts');
+const Compare = lazy(() => import('./pages/Compare'));
 const Home = lazy(() => import('./pages/Home'));
 const Properties = lazy(() => import('./pages/Properties'));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
@@ -122,6 +124,7 @@ export default function App() {
                     <Route path="settings" element={<Settings />} />
                     <Route path="permissions" element={<Permissions />} />
                     <Route path="accounts" element={<Accounts />} />
+                    <Route path="website" element={<Website />} />
                     <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
                   </Route>
                 </Route>
@@ -147,6 +150,7 @@ export default function App() {
                 <Route path="category/:slug" element={<CategoryRoute />} />
                 <Route path="property/:slug" element={<PropertyDetails />} />
                 <Route path="favorites" element={<Properties favorites />} />
+                <Route path="compare" element={<Compare />} />
                 <Route path="search" element={<Properties search />} />
                 <Route path="about" element={<About />} />
                 <Route path="invest" element={<Invest />} />

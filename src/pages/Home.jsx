@@ -33,7 +33,7 @@ function Hero() {
             src={src}
             alt={t('')}
             eager={i === 0}
-            className={`hero-slide ${slide === i ? 'active' : ''} ${paused ? 'paused' : ''}`}
+            className={`hero-slide ${slide % siteConfig.heroImages.length === i ? 'active' : ''} ${paused ? 'paused' : ''}`}
           />
         ))}
       </div>
@@ -64,17 +64,29 @@ function Hero() {
             {t(' BELONG')}
           </p>
           <h1>
-            {t('Discover a')}
-            <br />
-            {t('Brighter Tomorrow')}
-            <br />
-            {t('in Dubai')}
+            {siteConfig.heroTitle ? (
+              t(siteConfig.heroTitle)
+            ) : (
+              <>
+                {t('Discover a')}
+                <br />
+                {t('Brighter Tomorrow')}
+                <br />
+                {t('in Dubai')}
+              </>
+            )}
             <span className="gold-dot">.</span>
           </h1>
           <p className="hero-description">
-            {t('Premium properties. Global opportunities.')}
-            <br />
-            {t('A better way to live, invest, and grow.')}
+            {siteConfig.heroDescription ? (
+              t(siteConfig.heroDescription)
+            ) : (
+              <>
+                {t('Premium properties. Global opportunities.')}
+                <br />
+                {t('A better way to live, invest, and grow.')}
+              </>
+            )}
           </p>
         </motion.div>
         <PropertySearch />
@@ -111,11 +123,11 @@ function Hero() {
           {siteConfig.heroImages.map((_, i) => (
             <button
               key={i}
-              className={slide === i ? 'active' : ''}
+              className={slide % siteConfig.heroImages.length === i ? 'active' : ''}
               aria-label={t('Show hero slide {0}', {
                 0: i + 1,
               })}
-              aria-pressed={slide === i}
+              aria-pressed={slide % siteConfig.heroImages.length === i}
               onClick={() => setSlide(i)}
             />
           ))}
@@ -135,7 +147,8 @@ function LocationsPanel() {
   const { t } = useLanguage();
   const { locations } = useCatalog();
   const [selected, setSelected] = useState(1);
-  const location = locations[selected];
+  const location = locations[selected % locations.length];
+  if (!location) return null;
   return (
     <section className="locations-panel">
       <Photo src={location.image} alt={t(location.name)} />
@@ -161,8 +174,8 @@ function LocationsPanel() {
         {locations.slice(0, 5).map((l, i) => (
           <button
             key={l.slug}
-            className={selected === i ? 'active' : ''}
-            aria-pressed={selected === i}
+            className={selected % locations.length === i ? 'active' : ''}
+            aria-pressed={selected % locations.length === i}
             onClick={() => setSelected(i)}
           >
             <Photo src={l.image} alt={t('')} />
@@ -180,7 +193,8 @@ function Testimonials() {
   const [index, setIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const move = (delta) => setIndex((i) => (i + delta + testimonials.length) % testimonials.length);
-  const item = testimonials[index];
+  const item = testimonials[index % testimonials.length];
+  if (!item) return null;
   return (
     <section
       className="testimonials"

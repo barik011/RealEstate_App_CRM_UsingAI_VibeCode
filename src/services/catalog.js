@@ -1,3 +1,4 @@
+import { storage } from '../utils/storage';
 import properties from '../data/properties.json';
 import locations from '../data/locations.json';
 import categories from '../data/categories.json';
@@ -8,14 +9,22 @@ import { crmService } from './crmService';
 import { isSupabase, requireSupabase, backendError } from './supabase/client';
 import site from '../data/site.json';
 
-const collections = { properties, locations, categories, articles, testimonials,site };
+const collections = { properties, locations, categories, articles, testimonials, site };
 export const catalogService = {
   async getCollection(name) {
     if (name === 'properties')
       return (await crmService.getSnapshot()).properties.filter((p) => p.status === 'ACTIVE');
-    if(isSupabase) {const {data,error}=await requireSupabase().from('public_content').select('data').eq('kind',name).single();if(error)throw backendError(error);return data.data;}
+    if (isSupabase) {
+      const { data, error } = await requireSupabase()
+        .from('public_content')
+        .select('data')
+        .eq('kind', name)
+        .single();
+      if (error) throw backendError(error);
+      return data.data;
+    }
     if (!collections[name]) throw new Error('Collection unavailable');
-    return collections[name];
+    return storage.get(`content-public-${name}`, collections[name]);
   },
 };
 export function filterProperties(items, filters = {}) {
@@ -32,7 +41,10 @@ export function filterProperties(items, filters = {}) {
       (!filters.min || p.price >= Number(filters.min)) &&
       (!filters.max || p.price <= Number(filters.max)) &&
       (!filters.beds || p.bedrooms >= Number(filters.beds)) &&
-      (!filters.baths || p.bathrooms >= Number(filters.baths)),
+      (!filters.baths || p.bathrooms >= Number(filters.baths)) &&
+      (!filters.minArea || p.area >= Number(filters.minArea)) &&
+      (!filters.maxArea || p.area <= Number(filters.maxArea)) &&
+      (!filters.amenity || (p.amenities || []).includes(filters.amenity)),
   );
   const sorters = {
     'price-asc': (a, b) => a.price - b.price,

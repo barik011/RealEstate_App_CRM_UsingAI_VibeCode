@@ -27,7 +27,7 @@ export function Logo() {
         <path d="M3 35V10M10 41V1M17 38V14M24 33V21" stroke="currentColor" strokeWidth="2" />
       </svg>
       <span>
-        {t('DUBAI BAYT')}
+        {t(siteConfig.brand.toUpperCase())}
         <small>{t('PROPERTIES FOR A BRIGHTER TOMORROW')}</small>
       </span>
     </Link>

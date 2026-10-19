@@ -7,6 +7,7 @@ export function CatalogProvider({ children }) {
   const [state, setState] = useState({ loading: true, error: null });
   useEffect(() => {
     let active = true;
+    let revision = 0;
     const unsubscribe = crmService.subscribe((data) => {
       if (active)
         setState((previous) => ({
@@ -15,20 +16,34 @@ export function CatalogProvider({ children }) {
         }));
     });
     const names = ['properties', 'locations', 'categories', 'articles', 'testimonials', 'site'];
-    Promise.all(names.map((name) => catalogService.getCollection(name)))
-      .then((values) => {
-        updateSiteConfig(values[names.indexOf('site')]);
-        if (active)
-          setState({
-            ...Object.fromEntries(names.map((name, i) => [name, values[i]])),
-            loading: false,
-            error: null,
-          });
-      })
-      .catch((error) => {
-        if (active) setState({ loading: false, error: error.message });
-      });
+    const refreshContent = () => {
+      const ticket = ++revision;
+      return Promise.all(names.map((name) => catalogService.getCollection(name)))
+        .then((values) => {
+          if (!active || ticket !== revision) return;
+          updateSiteConfig(values[names.indexOf('site')]);
+          if (active)
+            setState({
+              ...Object.fromEntries(names.map((name, i) => [name, values[i]])),
+              loading: false,
+              error: null,
+            });
+        })
+        .catch((error) => {
+          if (active && ticket === revision) setState({ loading: false, error: error.message });
+        });
+    };
+    refreshContent();
+    const onFocus = () => refreshContent();
+    window.addEventListener('website-content-updated', onFocus);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('storage', onFocus);
+    const poll = setInterval(onFocus, 60000);
     return () => {
+      clearInterval(poll);
+      window.removeEventListener('website-content-updated', onFocus);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('storage', onFocus);
       active = false;
       unsubscribe();
     };

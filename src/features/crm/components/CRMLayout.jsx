@@ -45,6 +45,7 @@ const adminNav = [
   ['viewings', 'Viewings', CalendarDays],
   ['tasks', 'Tasks', ListTodo],
   ['reports', 'Reports', ChartNoAxesCombined],
+  ['website', 'Website content', Settings],
   ['settings', 'Settings', Settings],
   ['permissions', 'Permissions', ShieldCheck],
 ];

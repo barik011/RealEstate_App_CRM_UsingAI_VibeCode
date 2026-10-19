@@ -201,3 +201,7 @@ The configuration assumes deployment at the domain root. For a subdirectory, upd
 Before using this as a real agency website, replace demo content, contact/social details and policies with verified business information.
 
 Production builds require `VITE_DATA_BACKEND=supabase`, `VITE_SUPABASE_URL` and a public Supabase key. Missing configuration fails the build instead of deploying demo authentication. For an offline demonstration bundle, set `VITE_DATA_BACKEND=mock` and explicitly run `npm run build -- --mode demo`.
+
+## Website content and property discovery
+
+Open `/admin/website` to manage website settings, communities, categories, articles and testimonials using private drafts and publication. Visitors can compare up to three homes, save searches on their device, and filter by area/amenity. See [research, delivered features and recommended next steps](PROPERTY_PORTAL_RESEARCH.md). Connected validation: `node scripts/supabase-website-smoke.mjs`.

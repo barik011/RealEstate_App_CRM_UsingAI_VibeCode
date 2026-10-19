@@ -1,3 +1,4 @@
+import { CompareButton } from './PropertyTools';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -85,6 +86,7 @@ export function PropertyCard({ property }) {
           {t(', Dubai')}
         </p>
         <PropertyFacts property={property} />
+        <CompareButton property={property} />
         <div className="property-price">
           <strong>
             {t(money(property.price))}

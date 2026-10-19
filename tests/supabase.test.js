@@ -598,6 +598,29 @@ test('Supabase migrations, server workflow and RLS isolate anonymous and agent a
         await assert.rejects(command('readNotifications', {}), /inactive/);
       },
     );
+    await t.test('website drafts are private, publication is versioned and linked categories cannot be removed', async()=>{
+      await db.exec('reset role');
+      const categories=JSON.parse(readFileSync('src/data/categories.json','utf8'));
+      await db.query("insert into public.public_content(kind,data) values ('categories',$1::jsonb),('articles','[]')",[JSON.stringify(categories)]);
+      const content=async(kind,action='read',payload=null,version=null)=>(await db.query('select public.website_content($1,$2,$3::jsonb,$4) as result',[kind,action,JSON.stringify(payload),version])).rows[0].result;
+      await asRole('anon');
+      await assert.rejects(content('articles'),/permission denied/);
+      await assert.rejects(db.query('select * from public.website_content_drafts'),/permission denied/);
+      await asRole('authenticated',agentId);
+      await assert.rejects(content('articles'),/Administrator/);
+      await asRole('authenticated',adminId);
+      const initial=await content('articles');
+      const article={slug:'research',title:'Research',category:'Guides',date:'2026-10-19',image:'https://example.com/image.jpg',excerpt:'A useful guide',paragraphs:['Published paragraph']};
+      const draft=await content('articles','draft',[article],initial.version);
+      assert.equal((await db.query("select data from public.public_content where kind='articles'")).rows[0].data.length,0);
+      await assert.rejects(content('articles','publish',[article],initial.version),/changed/);
+      await content('articles','publish',[article],draft.version);
+      await assert.rejects(content('articles','publish',[{...article,image:'javascript:alert(1)'}],draft.version+1),/HTTPS/);
+      const cats=await content('categories');
+      await assert.rejects(content('categories','publish',[],cats.version),/property still uses/);
+      await asRole('anon');
+      assert.equal((await db.query("select data from public.public_content where kind='articles'")).rows[0].data[0].title,'Research');
+    });
   } finally {
     await db.close();
   }
