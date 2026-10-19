@@ -30,7 +30,8 @@ import {
 } from '../store';
 import { crmService } from '../../../services/crmService';
 import { authService } from '../../../services/authService';
-import { isAdmin, label, dateTime } from '../constants';
+import { isAdmin, label, dateTime, homeFor } from '../constants';
+import { canVisit } from '../permissions';
 import { Button, Dialog, EmptyState, useCommand } from './UI';
 import '../crm.css';
 import { isSupabase } from '../../../services/supabase/client';
@@ -40,6 +41,7 @@ const adminNav = [
   ['leads', 'Leads', Users],
   ['properties', 'Properties', House],
   ['agents', 'Agents', UserRound],
+  ['accounts', 'Logins & access', ShieldCheck],
   ['viewings', 'Viewings', CalendarDays],
   ['tasks', 'Tasks', ListTodo],
   ['reports', 'Reports', ChartNoAxesCombined],
@@ -52,13 +54,15 @@ const agentNav = [
   ['tasks', 'Tasks', ListTodo],
   ['viewings', 'Viewings', CalendarDays],
   ['calendar', 'Calendar', CalendarDays],
+  ['reports', 'My reports', ChartNoAxesCombined],
   ['profile', 'Profile', UserRound],
   ['permissions', 'My permissions', ShieldCheck],
 ];
 function Sidebar({ admin, base, onNavigate, collapsed }) {
+  const user = useSelector(selectUser);
   return (
     <>
-      <Link className="crm-brand" to={`${base}/dashboard`} onClick={onNavigate}>
+      <Link className="crm-brand" to={homeFor(user)} onClick={onNavigate}>
         <Building2 size={28} />
         {!collapsed && (
           <span>
@@ -68,12 +72,14 @@ function Sidebar({ admin, base, onNavigate, collapsed }) {
       </Link>
       <p className="crm-nav-caption">{collapsed ? 'CRM' : 'WORKSPACE'}</p>
       <nav aria-label="CRM navigation">
-        {(admin ? adminNav : agentNav).map(([path, title, Icon]) => (
-          <NavLink key={path} to={`${base}/${path}`} onClick={onNavigate} title={title}>
-            <Icon size={19} />
-            {!collapsed && <span>{title}</span>}
-          </NavLink>
-        ))}
+        {(admin ? adminNav : agentNav)
+          .filter(([path]) => canVisit(user, path))
+          .map(([path, title, Icon]) => (
+            <NavLink key={path} to={`${base}/${path}`} onClick={onNavigate} title={title}>
+              <Icon size={19} />
+              {!collapsed && <span>{title}</span>}
+            </NavLink>
+          ))}
       </nav>
       <Link className="crm-public-link" to="/">
         {collapsed ? <House size={20} /> : '↗ Visit public website'}
@@ -280,7 +286,7 @@ export function CRMLayout({ admin = false }) {
         </header>
         <main id="crm-content" className="crm-content">
           <nav className="crm-breadcrumb" aria-label="CRM breadcrumb">
-            <Link to={`${base}/dashboard`}>{admin ? 'Admin' : 'Agent'}</Link>
+            <Link to={homeFor(user)}>{admin ? 'Admin' : 'Agent'}</Link>
             {location.pathname
               .split('/')
               .slice(2)

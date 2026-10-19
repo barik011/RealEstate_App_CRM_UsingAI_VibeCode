@@ -20,3 +20,7 @@ enable_signup = false
 [auth.email]
 enable_signup = false
 enable_confirmations = true
+
+[functions.agent-accounts]
+# JWT identity is verified with Auth.getUser inside the handler before any access.
+verify_jwt = false

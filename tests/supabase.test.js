@@ -30,6 +30,9 @@ test('Supabase migrations, server workflow and RLS isolate anonymous and agent a
       "insert into public.profiles(id,name,role,agent_id) values ($1,'Admin','ADMIN',null),($2,'Sarah Ahmed','AGENT','agent-1')",
       [adminId, agentId],
     );
+    await db.query(
+      "update public.profiles set permissions=array['dashboard','leads','leadUpdates','tasks','taskUpdates','viewings','viewingUpdates','calendar','reports'] where role='AGENT'",
+    );
     const asRole = async (role, uid = '') => {
       await db.exec(`reset role;set role ${role}`);
       await db.query(
@@ -476,6 +479,90 @@ test('Supabase migrations, server workflow and RLS isolate anonymous and agent a
         /Administrator/,
       );
     });
+    await t.test(
+      'individual permissions default to profile-only and enforce read/write, revocation and version checks',
+      async () => {
+        const limitedId = '00000000-0000-4000-8000-000000000004';
+        await db.exec('reset role');
+        await db.query('insert into auth.users values ($1)', [limitedId]);
+        await db.query(
+          "insert into public.profiles(id,name,role,agent_id) values ($1,'Limited Agent','AGENT','agent-2')",
+          [limitedId],
+        );
+        const access = (permissions, enabled, version) =>
+          db.query('select public.set_agent_access($1,$2::text[],$3,$4)', [
+            'agent-2',
+            permissions,
+            enabled,
+            version,
+          ]);
+        await asRole('authenticated', limitedId);
+        assert.deepEqual(
+          (await db.query('select permissions from public.profiles where id=$1', [limitedId]))
+            .rows[0].permissions,
+          [],
+        );
+        assert.equal((await db.query('select id from public.agents')).rows.length, 1);
+        for (const table of [
+          'leads',
+          'lead_notes',
+          'lead_activities',
+          'tasks',
+          'viewings',
+          'notifications',
+          'crm_settings',
+        ])
+          assert.equal((await db.query(`select id from public.${table}`)).rows.length, 0);
+        await assert.rejects(command('note', { id: leadId, content: 'Denied' }), /permission/);
+        await assert.rejects(access(['leads'], true, 1), /Administrator/);
+        await assert.rejects(
+          db.query("update public.profiles set permissions=array['leads'] where id=$1", [
+            limitedId,
+          ]),
+          /permission denied/,
+        );
+        await assert.rejects(
+          db.query("select app_private.crm_command_properties('readNotifications','{}')"),
+          /permission denied/,
+        );
+        await asRole('authenticated', adminId);
+        await assert.rejects(access(['taskUpdates'], true, 1), /valid permissions/);
+        await assert.rejects(access(['__admin_only__'], true, 1), /valid permissions/);
+        await access(['leads', 'tasks'], true, 1);
+        await assert.rejects(access([], true, 1), /changed by another administrator/);
+        await asRole('authenticated', limitedId);
+        const visible = (await db.query('select id,assigned_agent_id from public.leads')).rows;
+        assert.ok(visible.length);
+        assert.ok(visible.every((row) => row.assigned_agent_id === 'agent-2'));
+        assert.equal((await db.query('select id from public.viewings')).rows.length, 0);
+        await assert.rejects(
+          command('note', { id: visible[0].id, content: 'Denied read-only edit' }),
+          /permission/,
+        );
+        await assert.rejects(command('createTask', { leadId: visible[0].id }), /permission/);
+        await asRole('authenticated', adminId);
+        await access(['leads', 'leadUpdates', 'tasks'], true, 2);
+        await asRole('authenticated', limitedId);
+        await command('note', { id: visible[0].id, content: 'Explicitly granted note' });
+        await assert.rejects(
+          command('note', { id: leadId, content: 'Other agent' }),
+          /unavailable|assigned/,
+        );
+        await asRole('authenticated', adminId);
+        await access(['leads', 'leadUpdates', 'tasks'], false, 3);
+        await asRole('authenticated', limitedId);
+        assert.equal((await db.query('select id from public.leads')).rows.length, 0);
+        assert.equal((await db.query('select id from public.agents')).rows.length, 0);
+        await assert.rejects(
+          command('note', { id: visible[0].id, content: 'Disabled' }),
+          /disabled|inactive/,
+        );
+        await asRole('authenticated', adminId);
+        await access([], true, 4);
+        await asRole('authenticated', limitedId);
+        assert.equal((await db.query('select id from public.leads')).rows.length, 0);
+      },
+    );
     await t.test(
       'deactivated login accounts lose CRM reads and writes while history stays intact',
       async () => {

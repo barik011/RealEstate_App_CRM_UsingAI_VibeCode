@@ -3,8 +3,10 @@ import { useDispatch } from 'react-redux';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Building2, ArrowLeft } from 'lucide-react';
 import { authService } from '../../services/authService';
-import { sessionChanged } from '../crm/store';
+import { sessionChanged, crmSlice } from '../crm/store';
+import { crmService } from '../../services/crmService';
 import { homeFor } from '../crm/constants';
+import { canVisit } from '../crm/permissions';
 import { Button, Field } from '../crm/components/UI';
 import '../crm/crm.css';
 import { isSupabase } from '../../services/supabase/client';
@@ -45,11 +47,23 @@ export function Login({ portal }) {
     setError('');
     try {
       const user = await authService.signIn(data);
+      if (isSupabase) {
+        const snapshot = await crmService.getSnapshot();
+        if (snapshot.scopeUserId !== user.id)
+          throw new Error('Your session changed. Please sign in again.');
+        dispatch(crmSlice.actions.snapshotReceived(snapshot));
+      }
       dispatch(sessionChanged(user));
       const from = location.state?.from;
-      navigate(from?.startsWith(`/${user.role.toLowerCase()}/`) ? from : homeFor(user), {
-        replace: true,
-      });
+      navigate(
+        from?.startsWith(`/${user.role.toLowerCase()}/`) &&
+          canVisit(user, from.split('/')[2]?.split(/[?#]/)[0])
+          ? from
+          : homeFor(user),
+        {
+          replace: true,
+        },
+      );
     } catch (e) {
       setError(e.message);
     } finally {
@@ -146,7 +160,7 @@ export function Login({ portal }) {
       )}
       <p className="crm-muted">
         {isSupabase
-          ? 'Sign in with your invited team account. Your role controls access to the shared workspace.'
+          ? 'Sign in with the account created by your administrator. Your permissions control workspace access.'
           : 'Frontend demo authentication only. Data stays in this browser; these accounts do not provide production security.'}
       </p>
     </div>

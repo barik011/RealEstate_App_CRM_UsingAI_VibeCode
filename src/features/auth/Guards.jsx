@@ -2,17 +2,21 @@ import { useSelector } from 'react-redux';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { selectUser } from '../crm/store';
 import { homeFor } from '../crm/constants';
-import { hasWorkspaceAccess } from '../crm/permissions';
+import { hasWorkspaceAccess, canVisit } from '../crm/permissions';
 export function ProtectedRoute() {
   const user = useSelector(selectUser);
   const loading = useSelector((state) => state.auth.loading);
   const crmLoading = useSelector((state) => state.crm.loading);
   const crmError = useSelector((state) => state.crm.error);
+  const wrongScope = useSelector(
+    (state) =>
+      Object.hasOwn(state.crm, 'scopeUserId') && state.crm.scopeUserId !== (user?.id || null),
+  );
   const agentActive = useSelector((state) =>
     state.crm.agents.some((agent) => agent.id === user?.agentId && agent.status === 'ACTIVE'),
   );
   const location = useLocation();
-  if (loading || (user?.role === 'AGENT' && crmLoading))
+  if (loading || (user?.role === 'AGENT' && (crmLoading || (!crmError && wrongScope))))
     return (
       <div className="crm-skeleton" role="status">
         Restoring your session…
@@ -41,12 +45,17 @@ export function ProtectedRoute() {
 }
 export function RoleGuard({ role }) {
   const user = useSelector(selectUser);
-  return user?.role === role ? (
+  const location = useLocation();
+  const page = location.pathname.split('/')[2];
+  return user?.role === role && (!page || canVisit(user, page)) ? (
     <Outlet />
   ) : (
     <div className="crm crm-denied" dir="ltr">
       <h1>Access restricted</h1>
-      <p>This workspace requires an authorized {role.toLowerCase()} account.</p>
+      <p>
+        Your account does not have access to this area. Contact your administrator to request
+        permission.
+      </p>
       <Link className="crm-button" to={homeFor(user)}>
         Return to your dashboard
       </Link>
@@ -55,4 +64,8 @@ export function RoleGuard({ role }) {
       </Link>
     </div>
   );
+}
+export function WorkspaceHome() {
+  const user = useSelector(selectUser);
+  return <Navigate to={homeFor(user)} replace />;
 }

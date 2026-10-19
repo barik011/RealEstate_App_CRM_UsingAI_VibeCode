@@ -1,4 +1,4 @@
-import { hasWorkspaceAccess, ownsRecord } from './permissions.js';
+import { hasWorkspaceAccess, ownsRecord, can } from './permissions.js';
 export const STAGES = [
   'NEW',
   'ASSIGNED',
@@ -73,9 +73,13 @@ export const homeFor = (user) =>
     ? '/login'
     : user.role === 'ADMIN'
       ? '/admin/dashboard'
-      : '/agent/dashboard';
+      : can(user, 'dashboard')
+        ? '/agent/dashboard'
+        : '/agent/profile';
 export const isAdmin = (user) => hasWorkspaceAccess(user) && user.role === 'ADMIN';
 export const canAccessLead = (user, lead) =>
-  Boolean(lead && (isAdmin(user) || ownsRecord(user, lead.assignedAgentId)));
+  Boolean(
+    lead && (isAdmin(user) || (can(user, 'leads') && ownsRecord(user, lead.assignedAgentId))),
+  );
 export const canAccessWork = (user, record) =>
   Boolean(record && (isAdmin(user) || ownsRecord(user, record.agentId)));

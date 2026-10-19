@@ -1,5 +1,9 @@
 # CRM improvements and release notes
 
+## Individual agent accounts — 19 October 2026
+
+Implemented administrator login creation and password reset, per-agent read/update permissions, login enablement, profile-only defaults, agent password change, database enforcement and account audit history. See [AGENT_ACCOUNTS.md](AGENT_ACCOUNTS.md). The database migrations and `agent-accounts` Edge Function are deployed to the connected project. New frontend functionality is available on the local development server; publishing the static website bundle remains a separate deployment step.
+
 ## Implemented
 
 | Area | Changes |
@@ -44,6 +48,6 @@ This release improves the existing CRM; it does not certify every operational re
 - Add a background job queue, delivery preferences, retries and provider configuration for email/SMS/WhatsApp reminders. Current reminders are in-app, and communication logging does not send messages.
 - Extend the implemented property version checks to other editable records, including profiles and workspace settings. Property conflicts currently retain the unsaved form and ask the user to close, refresh and review the current record before retrying; they do not automatically merge edits.
 - Establish monitored backups, restoration drills, error monitoring, retention rules and deployment rollback procedures for the hosted environment.
-- Add an administrator account-management screen for invitations and account recovery; creating an agent directory record alone does not provision a login.
+- Email invitation delivery remains separate from the implemented administrator account-management screen. Admins can now create logins and reset passwords directly without sending email.
 
 The unit/database tests use local PGlite and the Playwright regression suite uses the demo backend. The separate connected smoke check uses the hosted Supabase database and the local frontend; it does not verify a newly published website bundle.

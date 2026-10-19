@@ -39,6 +39,7 @@ import {
   Timeline,
 } from '../components/UI';
 import { LeadActionDialog } from '../components/LeadActions';
+import { can } from '../permissions';
 import { Photo } from '../../../components/ui';
 
 export function LeadPipeline({ leads, base, onStage }) {
@@ -196,14 +197,17 @@ export function Leads() {
     { title: 'Created', render: (l) => dateTime(l.createdAt) },
     {
       title: 'Actions',
-      render: (l) => (
-        <button
-          className="crm-text-button"
-          onClick={() => setAction({ action: 'status', lead: l })}
-        >
-          Change stage
-        </button>
-      ),
+      render: (l) =>
+        can(user, 'leadUpdates') ? (
+          <button
+            className="crm-text-button"
+            onClick={() => setAction({ action: 'status', lead: l })}
+          >
+            Change stage
+          </button>
+        ) : (
+          'Read only'
+        ),
     },
   ];
   return (
@@ -381,7 +385,9 @@ export function Leads() {
           <LeadPipeline
             leads={filtered}
             base={base}
-            onStage={(lead) => setAction({ action: 'status', lead })}
+            onStage={
+              can(user, 'leadUpdates') ? (lead) => setAction({ action: 'status', lead }) : undefined
+            }
           />
         )}
       </Panel>
@@ -461,31 +467,33 @@ export function LeadDetail() {
       </PageHeading>
       <div className="crm-lead-actions">
         {admin && !closed && <Button onClick={() => setAction('assign')}>Assign agent</Button>}
-        <Button secondary onClick={() => setAction('status')}>
+        <Button secondary permission="leadUpdates" onClick={() => setAction('status')}>
           {closed ? 'Reopen lead' : 'Change status'}
         </Button>
-        <Button secondary onClick={() => setAction('priority')}>
+        <Button secondary permission="leadUpdates" onClick={() => setAction('priority')}>
           Change priority
         </Button>
-        <Button secondary onClick={() => setAction('note')}>
+        <Button secondary permission="leadUpdates" onClick={() => setAction('note')}>
           Add note
         </Button>
         {!closed && (
           <>
-            <Button secondary onClick={() => setAction('communication')}>
+            <Button secondary permission="leadUpdates" onClick={() => setAction('communication')}>
               Log communication
             </Button>
-            <Button secondary onClick={() => setAction('followUp')}>
+            <Button secondary permission="taskUpdates" onClick={() => setAction('followUp')}>
               Schedule follow-up
             </Button>
-            <Button secondary onClick={() => setAction('task')}>
+            <Button secondary permission="taskUpdates" onClick={() => setAction('task')}>
               Create task
             </Button>
-            <Button secondary onClick={() => setAction('viewing')}>
+            <Button secondary permission="viewingUpdates" onClick={() => setAction('viewing')}>
               Schedule viewing
             </Button>
-            <Button onClick={() => setAction('won')}>Mark as Won</Button>
-            <Button danger secondary onClick={() => setAction('lost')}>
+            <Button permission="leadUpdates" onClick={() => setAction('won')}>
+              Mark as Won
+            </Button>
+            <Button danger secondary permission="leadUpdates" onClick={() => setAction('lost')}>
               Mark as Lost
             </Button>
           </>
@@ -617,7 +625,7 @@ export function LeadDetail() {
           <Panel
             title="Notes"
             action={
-              <Button secondary onClick={() => setAction('note')}>
+              <Button secondary permission="leadUpdates" onClick={() => setAction('note')}>
                 Add note
               </Button>
             }

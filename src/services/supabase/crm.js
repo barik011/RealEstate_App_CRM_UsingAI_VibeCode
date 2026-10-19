@@ -44,9 +44,12 @@ export const supabaseCRM = {
     return () => statusListeners.delete(listener);
   },
   async getSnapshot() {
+    await supabaseAuth.refreshProfile();
     const snapshot = emptySnapshot();
     const user = supabaseAuth.getSession();
+    snapshot.scopeUserId = user?.id || null;
     snapshot.properties = (await rows('properties')).map(propertyFromRow);
+    if (supabaseAuth.getSession()?.id !== user?.id) return this.getSnapshot();
     if (!user) return snapshot;
     const names = [
       'agents',
@@ -111,7 +114,7 @@ export const supabaseCRM = {
     // The mutation is already committed. A failed refresh must not invite a
     // duplicate submission; realtime/navigation can retry the read separately.
     try {
-      if (command === 'saveAgent') await supabaseAuth.initialize();
+      if (command === 'saveAgent') await supabaseAuth.refreshProfile();
       const snapshot = await this.refresh();
       return snapshot.leads.find((l) => l.id === data?.id) || data;
     } catch (error) {
@@ -127,6 +130,7 @@ export const supabaseCRM = {
     if (!channel) {
       channel = requireSupabase().channel('crm-updates');
       for (const table of [
+        'profiles',
         'properties',
         'leads',
         'agents',

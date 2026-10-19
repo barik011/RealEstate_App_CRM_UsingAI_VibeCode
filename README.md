@@ -118,7 +118,7 @@ Mock authentication, selectors and route guards are demonstration UX controls, *
 
 Agent login is available from the public header and mobile navigation at `/agent/login`; administrators can use `/admin/login`. The shared `/login` route remains supported. Both login pages use the authenticated account's actual role and cannot grant a different role. Successful login restores authorized deep links, including filters.
 
-Administrators can inspect the role matrix and account setup guidance at `/admin/permissions`; agents can inspect their access at `/agent/permissions`. Creating an agent directory entry does not create a Supabase Auth account: follow the invitation/account linking steps in [SUPABASE_SETUP.md](SUPABASE_SETUP.md). See [PROJECT_REVIEW.md](PROJECT_REVIEW.md) for the current review, delivered improvements and remaining priorities.
+Administrators manage individual login accounts at `/admin/accounts`: create an agent login with an initial password, reset passwords, enable/disable login and grant each agent separate module permissions. New logins start with their own profile and password change only. Agents inspect grants at `/agent/permissions` and change passwords from `/agent/profile`. See [AGENT_ACCOUNTS.md](AGENT_ACCOUNTS.md) for steps, permission definitions and rollout instructions. Directory creation and login creation are separate explicit steps; the administrator does both in the app.
 
 ### Working CRM modules
 

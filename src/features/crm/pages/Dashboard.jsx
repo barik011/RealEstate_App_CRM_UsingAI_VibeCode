@@ -27,13 +27,18 @@ export const countBy = (rows, key) =>
     }, {}),
   );
 export function AgentPerformance({ data }) {
+  const user = useSelector(selectUser);
   return (
     <DataTable
       rows={data.agents}
       columns={[
         {
           title: 'Agent',
-          render: (a) => <RecordLink to={`/admin/agents/${a.id}`}>{a.name}</RecordLink>,
+          render: (a) => (
+            <RecordLink to={isAdmin(user) ? `/admin/agents/${a.id}` : '/agent/profile'}>
+              {a.name}
+            </RecordLink>
+          ),
         },
         {
           title: 'Active leads',
@@ -124,7 +129,7 @@ export function Dashboard() {
         </div>
         <div className="crm-actions">
           {admin && <Button onClick={() => setAction('create')}>+ Add lead</Button>}
-          <Button secondary onClick={() => setAction('viewing')}>
+          <Button secondary permission="viewingUpdates" onClick={() => setAction('viewing')}>
             Schedule viewing
           </Button>
         </div>
@@ -145,7 +150,7 @@ export function Dashboard() {
             </Button>
           </>
         )}
-        <Button secondary onClick={() => setAction('task')}>
+        <Button secondary permission="taskUpdates" onClick={() => setAction('task')}>
           Create task
         </Button>
         <Button secondary to={`${base}/leads`}>

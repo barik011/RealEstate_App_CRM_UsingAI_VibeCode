@@ -2,6 +2,7 @@ import { storage } from '../utils/storage.js';
 import { isSupabase } from './supabase/client.js';
 import { supabaseAuth } from './supabase/auth.js';
 import { mockDatabase } from '../repositories/mockDatabase.js';
+import { ALL_AGENT_PERMISSIONS } from '../features/crm/permissions.js';
 const accounts = [
   {
     id: 'profile-admin',
@@ -16,6 +17,7 @@ const accounts = [
     email: 'agent@dubaihouse.demo',
     role: 'AGENT',
     agentId: 'agent-1',
+    permissions: [...ALL_AGENT_PERMISSIONS],
   },
 ];
 const sessionKey = 'dubai-bayt:session';

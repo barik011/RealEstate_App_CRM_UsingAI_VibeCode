@@ -18,7 +18,9 @@
     "supabase:invite": "node scripts/supabase-invite.mjs",
     "supabase:configure-auth": "node scripts/supabase-configure-auth.mjs",
     "supabase:provision-admin": "node scripts/supabase-provision-admin.mjs",
-    "supabase:smoke": "node scripts/supabase-smoke.mjs"
+    "supabase:smoke": "node scripts/supabase-smoke.mjs",
+    "supabase:deploy-accounts": "node scripts/supabase-deploy-accounts.mjs",
+    "supabase:test-accounts": "node scripts/supabase-account-smoke.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",

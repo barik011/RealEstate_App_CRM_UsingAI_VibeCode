@@ -1,5 +1,7 @@
 # Application review — 18 October 2026
 
+> **19 October update:** Account administration is now implemented and deployed to the connected backend. Admins can create agent credentials, reset passwords, enable/disable login and grant permissions per agent. New accounts default to own-profile access. See [Agent accounts](AGENT_ACCOUNTS.md) for the current workflow and validation. The fixed-role findings below are historical. The connection incident was resolved as recorded at the end.
+
 ## Findings and delivered changes
 
 The repository already included password login, administrator and agent workspaces, inquiry capture, assignment, tasks, viewings, deal outcomes, reports, bulk assignment, CSV exports, property management, English/Arabic public pages and Supabase authorization. The main login discoverability problem was that the public entry point existed only in the footer.

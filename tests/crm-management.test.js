@@ -1,3 +1,4 @@
+import { ALL_AGENT_PERMISSIONS } from '../src/features/crm/permissions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSeed } from '../src/repositories/seed.js';
@@ -10,7 +11,13 @@ import {
 } from '../src/features/crm/reporting.js';
 
 const admin = { id: 'admin', name: 'Administrator', role: 'ADMIN' };
-const agent = { id: 'profile-agent', name: 'Sarah Ahmed', role: 'AGENT', agentId: 'agent-1' };
+const agent = {
+  permissions: [...ALL_AGENT_PERMISSIONS],
+  id: 'profile-agent',
+  name: 'Sarah Ahmed',
+  role: 'AGENT',
+  agentId: 'agent-1',
+};
 const fields = {
   name: 'New Agent',
   email: 'new@example.com',

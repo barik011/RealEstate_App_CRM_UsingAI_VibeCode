@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 import { admin, url } from './supabase-admin.mjs';
+import { ALL_AGENT_PERMISSIONS } from '../src/features/crm/permissions.js';
 
 const baseURL = process.argv[2] || process.env.SUPABASE_APP_URL || 'http://localhost:5173';
 const expect = playwrightExpect.configure({ timeout: 30000 });
@@ -69,6 +70,7 @@ try {
         name: `Connection Check ${role}`,
         role,
         agent_id: role === 'AGENT' ? agentId : null,
+        permissions: role === 'AGENT' ? [...ALL_AGENT_PERMISSIONS] : [],
       }),
     );
   }

@@ -1,10 +1,16 @@
+import { ALL_AGENT_PERMISSIONS } from '../src/features/crm/permissions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSeed } from '../src/repositories/seed.js';
 import { applyCommand } from '../src/services/crmService.js';
 
 const admin = { id: 'admin', role: 'ADMIN', name: 'Administrator' };
-const agent = { id: 'agent', role: 'AGENT', agentId: 'agent-1' };
+const agent = {
+  permissions: [...ALL_AGENT_PERMISSIONS],
+  id: 'agent',
+  role: 'AGENT',
+  agentId: 'agent-1',
+};
 const create = (data) =>
   applyCommand(
     data,

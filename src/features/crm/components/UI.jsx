@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { can } from '../permissions';
 import { Link } from 'react-router-dom';
 import { X, Inbox, ArrowUpRight } from 'lucide-react';
 import { label, dateTime } from '../constants';
 import { useToast } from '../../../components/ui';
 import { crmService } from '../../../services/crmService';
 
-export function Button({ children, to, secondary, danger, className = '', ...props }) {
+export function Button({ children, to, secondary, danger, permission, className = '', ...props }) {
+  const user = useSelector((state) => state.auth.user);
+  if (permission && !can(user, permission)) return null;
   const classes = `crm-button ${secondary ? 'secondary' : ''} ${danger ? 'danger' : ''} ${className}`;
   return to ? (
     <Link className={classes} to={to} {...props}>

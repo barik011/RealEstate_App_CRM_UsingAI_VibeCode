@@ -10,6 +10,8 @@ Free-plan projects can pause after low activity. For production availability, re
 
 ## Existing database setup
 
+Individual agent login creation, admin password reset, per-agent permissions and agent password changes are now available in the application. See [AGENT_ACCOUNTS.md](AGENT_ACCOUNTS.md) for the user workflow. Connected installations require migrations `202610190001_agent_access.sql` and `202610190002_profile_only_settings.sql`, plus the `agent-accounts` Edge Function (`node scripts/supabase-deploy-accounts.mjs`).
+
 Migrations through `202610030002_property_management.sql` were applied to the configured hosted project on 2026-10-03. They add agent/property audit history, protected CRUD and archive commands, atomic bulk assignment, inactive-account restrictions, and property version checks. Both private command implementations deny direct authenticated execution; property audit RLS and the version trigger were verified on the hosted database. Deploy the matching frontend with the property migration: property updates and deletion now require `expectedVersion`. See [CRM_IMPROVEMENTS.md](CRM_IMPROVEMENTS.md) for behavior and acceptance-test results.
 
 The application now has a Supabase backend adapter as well as its offline mock adapter. The connected mode does **not** fall back to local mock records when a database request fails. Database creation and seed import must finish before connected public pages can load.

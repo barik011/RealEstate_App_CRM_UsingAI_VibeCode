@@ -5,7 +5,7 @@ import { useCatalog } from './hooks/useCatalog';
 import Layout from './components/layout/Layout';
 import { EmptyState, Loader, ToastProvider } from './components/ui';
 import { useLanguage } from './i18n/LanguageProvider';
-import { ProtectedRoute, RoleGuard } from './features/auth/Guards';
+import { ProtectedRoute, RoleGuard, WorkspaceHome } from './features/auth/Guards';
 const authPage = (name) =>
   lazy(() => import('./features/auth/Auth').then((m) => ({ default: m[name] })));
 const crmPage = (file, name) =>
@@ -33,6 +33,7 @@ const AgentDetail = crmPage('Agents', 'AgentDetail');
 const Profile = crmPage('Agents', 'Profile');
 const Settings = crmPage('Settings', 'Settings');
 const Permissions = crmPage('Permissions', 'Permissions');
+const Accounts = crmPage('Accounts', 'Accounts');
 const Home = lazy(() => import('./pages/Home'));
 const Properties = lazy(() => import('./pages/Properties'));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
@@ -120,12 +121,13 @@ export default function App() {
                     <Route path="reports" element={<Reports />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="permissions" element={<Permissions />} />
+                    <Route path="accounts" element={<Accounts />} />
                     <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
                   </Route>
                 </Route>
                 <Route element={<RoleGuard role="AGENT" />}>
                   <Route path="agent" element={<AgentLayout />}>
-                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route index element={<WorkspaceHome />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="leads" element={<Leads />} />
                     <Route path="leads/:id" element={<LeadDetail />} />
@@ -134,7 +136,8 @@ export default function App() {
                     <Route path="calendar" element={<Calendar />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="permissions" element={<Permissions />} />
-                    <Route path="*" element={<Navigate to="/agent/dashboard" replace />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="*" element={<WorkspaceHome />} />
                   </Route>
                 </Route>
               </Route>

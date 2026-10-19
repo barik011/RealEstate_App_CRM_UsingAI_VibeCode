@@ -3,12 +3,13 @@ import { hasWorkspaceAccess } from '../../features/crm/permissions.js';
 let current = null;
 let authSubscription;
 let sequence = 0;
+let initialization;
 const listeners = new Set();
 async function profileFor(session) {
   if (!session?.user) return null;
   const { data, error } = await requireSupabase()
     .from('profiles')
-    .select('id,name,role,agent_id')
+    .select('id,name,role,agent_id,permissions,login_enabled,access_version')
     .eq('id', session.user.id)
     .maybeSingle();
   if (error) throw backendError(error);
@@ -22,13 +23,16 @@ async function profileFor(session) {
     if (agentError) throw backendError(agentError);
     if (!agent) return null;
   }
-  return hasWorkspaceAccess({ ...data, agentId: data?.agent_id })
+  return hasWorkspaceAccess({ ...data, agentId: data?.agent_id, loginEnabled: data?.login_enabled })
     ? {
         id: data.id,
         name: data.name,
         email: session.user.email,
         role: data.role,
         agentId: data.agent_id,
+        permissions: data.permissions,
+        loginEnabled: data.login_enabled,
+        accessVersion: data.access_version,
       }
     : null;
 }
@@ -43,25 +47,46 @@ async function loadSession(session) {
 }
 export const supabaseAuth = {
   getSession: () => current,
-  async initialize() {
-    const client = requireSupabase();
-    const { data, error } = await client.auth.getSession();
+  async refreshProfile() {
+    await this.initialize();
+    const ticket = ++sequence;
+    const { data, error } = await requireSupabase().auth.getSession();
     if (error) throw backendError(error);
-    await loadSession(data.session);
-    if (!authSubscription)
-      authSubscription = client.auth.onAuthStateChange((event, session) => {
-        if (event === 'INITIAL_SESSION') return;
-        // Never await a Supabase call inside the auth callback (client lock).
-        setTimeout(
-          () =>
-            loadSession(session).catch(() => {
-              current = null;
-              listeners.forEach((listener) => listener(null));
-            }),
-          0,
-        );
-      }).data.subscription;
+    const next = await profileFor(data.session);
+    if (ticket === sequence && JSON.stringify(next) !== JSON.stringify(current)) {
+      current = next;
+      listeners.forEach((listener) => listener(current));
+    }
     return current;
+  },
+  async initialize() {
+    if (initialization) return initialization;
+    initialization = (async () => {
+      const client = requireSupabase();
+      const { data, error } = await client.auth.getSession();
+      if (error) throw backendError(error);
+      await loadSession(data.session);
+      if (!authSubscription)
+        authSubscription = client.auth.onAuthStateChange((event, session) => {
+          if (event === 'INITIAL_SESSION') return;
+          // Never await a Supabase call inside the auth callback (client lock).
+          setTimeout(
+            () =>
+              loadSession(session).catch(() => {
+                current = null;
+                listeners.forEach((listener) => listener(null));
+              }),
+            0,
+          );
+        }).data.subscription;
+      return current;
+    })();
+    try {
+      return await initialization;
+    } catch (error) {
+      initialization = null;
+      throw error;
+    }
   },
   subscribe(listener) {
     listeners.add(listener);
@@ -97,7 +122,18 @@ export const supabaseAuth = {
     return 'If this email has an account, a password reset link will be sent. Check your inbox.';
   },
   async updatePassword(password) {
+    if (password.length < 12 || password.length > 128)
+      throw new Error('Use a password between 12 and 128 characters.');
     const { error } = await requireSupabase().auth.updateUser({ password });
     if (error) throw backendError(error);
+  },
+  async changePassword(currentPassword, password) {
+    if (!current) throw new Error('Sign in to continue.');
+    const { error } = await requireSupabase().auth.signInWithPassword({
+      email: current.email,
+      password: currentPassword,
+    });
+    if (error) throw new Error('Your current password is incorrect or could not be verified.');
+    await this.updatePassword(password);
   },
 };

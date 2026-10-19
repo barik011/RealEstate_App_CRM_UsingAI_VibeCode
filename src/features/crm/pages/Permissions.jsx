@@ -6,6 +6,8 @@ import {
   PERMISSION_LABELS,
   ROLE_PERMISSIONS,
   permissionFor,
+  AGENT_PRIVILEGES,
+  can,
 } from '../permissions';
 import { PageHeading, Panel, Badge, Button } from '../components/UI';
 import { isSupabase } from '../../../services/supabase/client';
@@ -44,7 +46,7 @@ export function Permissions() {
                 {admin ? (
                   <>
                     <th scope="col">Administrator</th>
-                    <th scope="col">Agent</th>
+                    <th scope="col">Agent maximum (admin granted)</th>
                   </>
                 ) : (
                   <th scope="col">Your access</th>
@@ -79,20 +81,39 @@ export function Permissions() {
           </p>
         </div>
       </Panel>
+      <Panel title={admin ? 'Individual agent permissions' : 'My enabled features'}>
+        <div className="crm-pad">
+          <p>
+            New logins start with their own profile, profile editing and password change only.
+            Additional access is granted separately for each agent. View access does not grant
+            update access.
+          </p>
+          {admin ? (
+            <Button to="/admin/accounts">Manage logins & access</Button>
+          ) : (
+            <ul>
+              {AGENT_PRIVILEGES.map(([key, name]) => (
+                <li key={key}>
+                  {name}: {can(user, key) ? 'Allowed' : 'Not granted'}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Panel>
       {admin && (
         <Panel title="Agent login setup">
           <div className="crm-pad">
             <p>
-              An agent directory entry does not create a login account. Create an active agent, then
-              have your account administrator provision a Supabase Auth account linked to that agent
-              ID with the AGENT role. The existing invitation script and setup guide describe this
-              process.
+              Create an active agent, then open Logins & access to set their initial password. Use
+              Permissions to grant features or disable their login. Passwords cannot be retrieved;
+              use Reset password when needed.
             </p>
             <p>
               After setting their password, agents sign in at /agent/login. Password recovery is
               available from the login screen.
             </p>
-            <Button to="/admin/agents">Manage agents</Button>
+            <Button to="/admin/accounts">Manage accounts</Button>
           </div>
         </Panel>
       )}

@@ -3,7 +3,7 @@ import { authService } from '../../services/authService.js';
 import { crmService } from '../../services/crmService.js';
 import { storage } from '../../utils/storage.js';
 import { canAccessLead, canAccessWork, isAdmin, taskStatus, dateKey } from './constants.js';
-import { hasWorkspaceAccess, ownsRecord } from './permissions.js';
+import { hasWorkspaceAccess, ownsRecord, can } from './permissions.js';
 const empty = {
   leads: [],
   properties: [],
@@ -57,12 +57,20 @@ export const uiSlice = createSlice({
 export const { sessionChanged } = authSlice.actions;
 export const { sidebarToggled } = uiSlice.actions;
 export async function initializeCRM(store) {
-  crmService.subscribe((snapshot) => store.dispatch(crmSlice.actions.snapshotReceived(snapshot)));
+  crmService.subscribe((snapshot) => {
+    if (
+      Object.hasOwn(snapshot, 'scopeUserId') &&
+      snapshot.scopeUserId !== (store.getState().auth.user?.id || null)
+    )
+      return;
+    store.dispatch(crmSlice.actions.snapshotReceived(snapshot));
+  });
   let sessionRevision = 0;
   const refreshForUser = async (user) => {
     const ticket = ++sessionRevision;
+    const changedIdentity = store.getState().auth.user?.id !== user?.id;
     store.dispatch(sessionChanged(user));
-    store.dispatch(crmSlice.actions.sessionReset());
+    if (changedIdentity) store.dispatch(crmSlice.actions.sessionReset());
     try {
       const snapshot = await crmService.getSnapshot();
       if (ticket === sessionRevision) store.dispatch(crmSlice.actions.snapshotReceived(snapshot));
@@ -98,13 +106,22 @@ export const selectWorkspace = createSelector([selectCRM, selectUser], (data, us
     agentEvents: isAdmin(user) ? data.agentEvents || [] : [],
     propertyEvents: isAdmin(user) ? data.propertyEvents || [] : [],
     leads,
-    tasks: data.tasks.filter((t) => ids.has(t.leadId) && canAccessWork(user, t)),
-    viewings: data.viewings.filter((v) => ids.has(v.leadId) && canAccessWork(user, v)),
+    tasks: data.tasks.filter(
+      (t) => can(user, 'tasks') && ids.has(t.leadId) && canAccessWork(user, t),
+    ),
+    viewings: data.viewings.filter(
+      (v) => can(user, 'viewings') && ids.has(v.leadId) && canAccessWork(user, v),
+    ),
     agents: data.agents.filter((a) => isAdmin(user) || ownsRecord(user, a.id)),
     notes: data.notes.filter((n) => ids.has(n.leadId)),
     activities: data.activities.filter((a) => ids.has(a.leadId)),
     notifications: data.notifications.filter(
-      (n) => isAdmin(user) || (n.agentId === user?.agentId && ids.has(n.leadId)),
+      (n) =>
+        isAdmin(user) ||
+        (can(user, 'tasks') &&
+          can(user, 'viewings') &&
+          n.agentId === user?.agentId &&
+          ids.has(n.leadId)),
     ),
   };
 });

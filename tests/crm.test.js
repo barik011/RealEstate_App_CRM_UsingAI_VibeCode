@@ -1,10 +1,17 @@
+import { ALL_AGENT_PERMISSIONS } from '../src/features/crm/permissions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSeed } from '../src/repositories/seed.js';
 import { applyCommand } from '../src/services/crmService.js';
 import { taskStatus } from '../src/features/crm/constants.js';
 const admin = { id: 'profile-admin', role: 'ADMIN', name: 'Demo Admin' };
-const agent = { id: 'profile-agent', role: 'AGENT', name: 'Sarah Ahmed', agentId: 'agent-1' };
+const agent = {
+  permissions: [...ALL_AGENT_PERMISSIONS],
+  id: 'profile-agent',
+  role: 'AGENT',
+  name: 'Sarah Ahmed',
+  agentId: 'agent-1',
+};
 const future = () => new Date(Date.now() + 3 * 86400000).toISOString();
 const inquiry = {
   name: 'Workflow Visitor',

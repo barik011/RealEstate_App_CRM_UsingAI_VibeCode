@@ -16,6 +16,7 @@ import {
 } from '../components/UI';
 import { LeadActionDialog } from '../components/LeadActions';
 import { useCRMClock } from '../useCRMClock';
+import { can } from '../permissions';
 
 function WorkDialog({ mode, record, viewing, onClose }) {
   const run = useCommand();
@@ -131,7 +132,10 @@ export function WorkPage({ viewing = false }) {
             : 'A clear next step for every customer.'
         }
       >
-        <Button onClick={() => setCreate(true)}>
+        <Button
+          permission={viewing ? 'viewingUpdates' : 'taskUpdates'}
+          onClick={() => setCreate(true)}
+        >
           {viewing ? 'Schedule viewing' : 'Create task'}
         </Button>
       </PageHeading>
@@ -208,7 +212,7 @@ export function WorkPage({ viewing = false }) {
                   {row.outcomeNotes}
                 </p>
               )}
-              {!closed && (
+              {!closed && can(user, viewing ? 'viewingUpdates' : 'taskUpdates') && (
                 <div className="crm-actions">
                   {viewing ? (
                     <Button

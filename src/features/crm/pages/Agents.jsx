@@ -5,6 +5,8 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { agentImpact } from '../agentRules';
 import { selectUser, selectWorkspace } from '../store';
 import { TERMINAL, isAdmin, dateTime } from '../constants';
+import { can } from '../permissions';
+import { ChangePassword } from '../components/ChangePassword';
 import {
   Badge,
   Button,
@@ -54,8 +56,8 @@ export function Agents() {
         title="Our agents"
         subtitle="Manage your team, availability and assigned workload."
       >
-        <Button to="/admin/permissions" secondary>
-          Login setup & permissions
+        <Button to="/admin/accounts" secondary>
+          Manage logins & access
         </Button>
         <Button
           className="crm-icon-action"
@@ -330,6 +332,12 @@ export function AgentDetail({ profile = false }) {
   return (
     <>
       <PageHeading title={profile ? 'My profile' : agent.name} subtitle={agent.specialization}>
+        {profile && <ChangePassword />}
+        {!profile && (
+          <Button secondary to="/admin/accounts">
+            Manage login & permissions
+          </Button>
+        )}
         <Button
           secondary
           className="crm-icon-action"
@@ -352,14 +360,16 @@ export function AgentDetail({ profile = false }) {
           </Button>
         )}
       </PageHeading>
-      <div className="crm-stats">
-        <StatCard title="Assigned leads" value={leads.length} />
-        <StatCard
-          title="Active leads"
-          value={leads.filter((l) => !TERMINAL.includes(l.status)).length}
-        />
-        <StatCard title="Won deals" value={leads.filter((l) => l.status === 'WON').length} />
-      </div>
+      {can(user, 'leads') && (
+        <div className="crm-stats">
+          <StatCard title="Assigned leads" value={leads.length} />
+          <StatCard
+            title="Active leads"
+            value={leads.filter((l) => !TERMINAL.includes(l.status)).length}
+          />
+          <StatCard title="Won deals" value={leads.filter((l) => l.status === 'WON').length} />
+        </div>
+      )}
       <div className="crm-two-column">
         <Panel title="Agent profile">
           <dl className="crm-info">
@@ -391,44 +401,50 @@ export function AgentDetail({ profile = false }) {
             </div>
           </dl>
         </Panel>
-        <Panel title="Assigned leads">
-          <DataTable
-            rows={leads}
-            columns={[
-              {
-                title: 'Customer',
-                render: (l) => (
-                  <RecordLink to={`${base}/leads/${l.id}`}>{l.customer.name}</RecordLink>
-                ),
-              },
-              { title: 'Status', render: (l) => <Badge value={l.status} /> },
-            ]}
-          />
-        </Panel>
-        <Panel title="Upcoming viewings">
-          <DataTable
-            rows={data.viewings.filter((v) => v.agentId === agent.id && v.status === 'SCHEDULED')}
-            columns={[
-              {
-                title: 'Customer',
-                render: (v) => (
-                  <RecordLink to={`${base}/viewings?record=${v.id}`}>
-                    {leads.find((l) => l.id === v.leadId)?.customer.name}
-                  </RecordLink>
-                ),
-              },
-              { title: 'Date', render: (v) => dateTime(v.date) },
-            ]}
-          />
-        </Panel>
-        <Panel title="Recent activities">
-          <Timeline
-            activities={data.activities
-              .filter((a) => ids.has(a.leadId))
-              .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-              .slice(0, 8)}
-          />
-        </Panel>
+        {can(user, 'leads') && (
+          <Panel title="Assigned leads">
+            <DataTable
+              rows={leads}
+              columns={[
+                {
+                  title: 'Customer',
+                  render: (l) => (
+                    <RecordLink to={`${base}/leads/${l.id}`}>{l.customer.name}</RecordLink>
+                  ),
+                },
+                { title: 'Status', render: (l) => <Badge value={l.status} /> },
+              ]}
+            />
+          </Panel>
+        )}
+        {can(user, 'viewings') && (
+          <Panel title="Upcoming viewings">
+            <DataTable
+              rows={data.viewings.filter((v) => v.agentId === agent.id && v.status === 'SCHEDULED')}
+              columns={[
+                {
+                  title: 'Customer',
+                  render: (v) => (
+                    <RecordLink to={`${base}/viewings?record=${v.id}`}>
+                      {leads.find((l) => l.id === v.leadId)?.customer.name}
+                    </RecordLink>
+                  ),
+                },
+                { title: 'Date', render: (v) => dateTime(v.date) },
+              ]}
+            />
+          </Panel>
+        )}
+        {can(user, 'leads') && (
+          <Panel title="Recent activities">
+            <Timeline
+              activities={data.activities
+                .filter((a) => ids.has(a.leadId))
+                .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                .slice(0, 8)}
+            />
+          </Panel>
+        )}
       </div>
       {edit && (
         <AgentDialog

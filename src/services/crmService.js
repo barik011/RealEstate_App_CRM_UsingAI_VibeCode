@@ -3,7 +3,7 @@ import { authService } from './authService.js';
 import { isSupabase } from './supabase/client.js';
 import { supabaseCRM } from './supabase/crm.js';
 import { agentImpact, validateAgent } from '../features/crm/agentRules.js';
-import { hasWorkspaceAccess } from '../features/crm/permissions.js';
+import { hasWorkspaceAccess, canCommand, commandPermission } from '../features/crm/permissions.js';
 import {
   propertyImpact,
   assertPropertyVersion,
@@ -61,6 +61,12 @@ const assertOpen = (lead) => {
 export function applyCommand(data, command, payload, user) {
   if (command !== 'inquiry' && !hasWorkspaceAccess(user))
     throw new Error('An authorized workspace account is required.');
+  if (command !== 'inquiry' && !canCommand(user, command))
+    throw new Error(
+      commandPermission(command)
+        ? 'Your administrator has not granted permission for this action.'
+        : 'Administrator access is required.',
+    );
   if (
     command !== 'inquiry' &&
     user?.role === 'AGENT' &&
