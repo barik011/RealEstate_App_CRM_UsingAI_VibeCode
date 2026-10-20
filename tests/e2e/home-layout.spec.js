@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
 test.use({ reducedMotion: 'reduce' });
-test('homepage rows and paired sections stay responsive with animated advantage cards', async ({
-  page,
-}) => {
+test('homepage full-width sections and story image controls stay responsive', async ({ page }) => {
   test.setTimeout(90000);
   await page.goto('/');
   await expect(page.locator('.highlight-card')).toHaveCount(8);
@@ -12,18 +10,35 @@ test('homepage rows and paired sections stay responsive with animated advantage 
       .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().top)));
     expect(new Set(tops).size).toBe(1);
   }
-  for (const selector of ['.home-story-pair', '.home-investment-pair']) {
-    const boxes = await page
-      .locator(`${selector} > section`)
-      .evaluateAll((items) =>
-        items.map((item) => ({
-          x: item.getBoundingClientRect().x,
-          y: item.getBoundingClientRect().y,
-        })),
-      );
-    expect(Math.abs(boxes[0].y - boxes[1].y)).toBeLessThan(2);
-    expect(boxes[1].x).toBeGreaterThan(boxes[0].x);
+  const sections = page.locator(
+    '.home-layout > .story-showcase, .home-layout > .locations-panel, .home-layout > .investment-showcase, .home-layout > .testimonials-showcase',
+  );
+  const boxes = await sections.evaluateAll((items) =>
+    items.map((item) => {
+      const r = item.getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, bottom: r.bottom };
+    }),
+  );
+  expect(boxes).toHaveLength(4);
+  for (let i = 1; i < boxes.length; i++) {
+    expect(boxes[i].y).toBeGreaterThan(boxes[i - 1].bottom);
+    expect(boxes[i].width).toBeCloseTo(boxes[0].width, 0);
   }
+  const storyButtons = page.locator('.story-points button');
+  const images = new Set();
+  for (let i = 0; i < 3; i++) {
+    await storyButtons.nth(i).click();
+    await expect(storyButtons.nth(i)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.story-caption span')).toHaveText(`0${i + 1} / 03`);
+    images.add(await page.locator('.story-frame img').getAttribute('src'));
+  }
+  expect(images.size).toBe(3);
+  const quote = page.locator('.testimonial-card blockquote');
+  const firstQuote = await quote.textContent();
+  await page.getByRole('button', { name: 'Next testimonial' }).click();
+  await expect(quote).not.toHaveText(firstQuote);
+  await page.getByRole('button', { name: 'Previous testimonial' }).click();
+  await expect(quote).toHaveText(firstQuote);
   await page.screenshot({ path: 'artifacts/homepage-new-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

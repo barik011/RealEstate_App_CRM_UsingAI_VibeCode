@@ -32,11 +32,18 @@ export function Categories({ compact = false, singleRow = false }) {
     </section>
   );
 }
-export function InvestmentBenefits({ compact = false }) {
+export function InvestmentBenefits({ compact = false, showcase = false }) {
   const { t } = useLanguage();
   return (
-    <section className={`investment-benefits ${compact ? 'compact' : ''}`}>
+    <section
+      className={`investment-benefits ${compact ? 'compact' : ''} ${showcase ? 'investment-showcase' : ''}`}
+    >
       <SectionHeader title={t('Why Invest in Dubai?')} to="/invest" link={t('Learn more')} />
+      {showcase && (
+        <p className="investment-intro">
+          {t('Expert advice, personal recommendations, and a world of possibilities.')}
+        </p>
+      )}
       <div className="benefits-grid">
         {[
           [Landmark, 'A considered', 'investment'],
@@ -83,7 +90,7 @@ export function FinalCTA() {
     </section>
   );
 }
-export function StoryPoints() {
+export function StoryPoints({ selected, onSelect }) {
   const { t } = useLanguage();
   return (
     <div className="story-points">
@@ -91,18 +98,27 @@ export function StoryPoints() {
         [Globe2, 'Trusted by', 'global investors'],
         [Handshake, 'End-to-end', 'support'],
         [ShieldCheck, 'Long-term', 'perspective'],
-      ].map(([Icon, a, b]) => (
-        <div key={a}>
-          <span>
-            <Icon size={21} strokeWidth={1} />
-          </span>
-          <p>
-            {t(a)}
-            <br />
-            {t(b)}
-          </p>
-        </div>
-      ))}
+      ].map(([Icon, a, b], index) => {
+        const Tag = onSelect ? 'button' : 'div';
+        return (
+          <Tag
+            key={a}
+            type={onSelect ? 'button' : undefined}
+            aria-pressed={onSelect ? selected === index : undefined}
+            aria-controls={onSelect ? 'story-image' : undefined}
+            onClick={onSelect ? () => onSelect(index) : undefined}
+          >
+            <span>
+              <Icon size={21} strokeWidth={1} />
+            </span>
+            <p>
+              {t(a)}
+              <br />
+              {t(b)}
+            </p>
+          </Tag>
+        );
+      })}
     </div>
   );
 }

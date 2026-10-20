@@ -63,3 +63,8 @@ Validation covers server-side content authorization, private drafts, version con
 ## Homepage layout follow-up
 
 Featured properties and categories now occupy separate full-width single rows, with horizontal scrolling on narrow screens. The story/community sections share one desktop row, and investment benefits/testimonials share another. An eight-card Dubai advantage section adds theme-matched icons, staggered entrance animation, hover movement and reduced-motion support. Administrators can change its title, introduction, icon choices, card text and visibility under Website content ? Homepage & website ? Dubai advantage section. Migration `202610190004_dubai_highlights.sql` validates the stored card structure. Sidebar and mobile drawer overflow now scrolls vertically on short screens.
+
+
+### Homepage layout refinement ? 20 October 2026
+
+Revisited [Property Finder](https://www.propertyfinder.ae/en): its community exploration and investor-guide entry points informed the clearer location selector and investment-guide link. The visual interpretation uses the existing navy and gold brand, four separate full-width sections, three selectable story images, prominent investment icon cards, and a dark testimonial carousel. Motion respects reduced-motion preferences; buttons support keyboard activation and expose their selected state. No investment returns or tax guarantees were added.

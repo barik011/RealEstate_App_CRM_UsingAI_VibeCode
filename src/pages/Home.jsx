@@ -144,6 +144,71 @@ function Hero() {
     </section>
   );
 }
+function StoryShowcase() {
+  const { t } = useLanguage();
+  const reduce = useReducedMotion();
+  const [selected, setSelected] = useState(0);
+  const slides = [
+    {
+      image: siteConfig.images.skyline,
+      title: 'Trusted by',
+      subtitle: 'global investors',
+      alt: 'Dubai skyline',
+    },
+    {
+      image: siteConfig.images.interior,
+      title: 'End-to-end',
+      subtitle: 'support',
+      alt: 'A beautifully considered home',
+    },
+    {
+      image: siteConfig.images.villa,
+      title: 'Long-term',
+      subtitle: 'perspective',
+      alt: 'Modern villa framed by palms',
+    },
+  ];
+  return (
+    <section className="story-section story-showcase">
+      <div>
+        <h2>
+          {t('More Than Properties.')}
+          <br />
+          {t('A Better Future.')}
+        </h2>
+        <p>
+          {t(
+            'At Dubai bayt, we connect global investors with exceptional real estate opportunities in one of the world’s most dynamic cities.',
+          )}
+        </p>
+        <Button light to="/about">
+          {t('Our story')}
+        </Button>
+        <StoryPoints selected={selected} onSelect={setSelected} />
+      </div>
+      <div className="story-image" id="story-image" aria-live="polite">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selected}
+            className="story-frame"
+            initial={reduce ? false : { opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 0.45 }}
+          >
+            <Photo src={slides[selected].image} alt={t(slides[selected].alt)} />
+            <div className="story-caption">
+              <span>0{selected + 1} / 03</span>
+              <h3>
+                {t(slides[selected].title)} {t(slides[selected].subtitle)}
+              </h3>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+}
 function LocationsPanel() {
   const { t } = useLanguage();
   const { locations } = useCatalog();
@@ -191,6 +256,7 @@ function LocationsPanel() {
 function Testimonials() {
   const { t, isRTL } = useLanguage();
   const { testimonials } = useCatalog();
+  const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const move = (delta) => setIndex((i) => (i + delta + testimonials.length) % testimonials.length);
@@ -198,7 +264,7 @@ function Testimonials() {
   if (!item) return null;
   return (
     <section
-      className="testimonials"
+      className="testimonials testimonials-showcase"
       aria-roledescription={t('carousel')}
       aria-label={t('Client testimonials')}
       tabIndex={0}
@@ -237,17 +303,16 @@ function Testimonials() {
           <AnimatePresence mode="wait">
             <motion.div
               key={item.id}
-              initial={{
-                opacity: 0,
-              }}
+              initial={reduce ? false : { opacity: 0, y: 16 }}
               animate={{
                 opacity: 1,
+                y: 0,
               }}
               exit={{
                 opacity: 0,
               }}
               transition={{
-                duration: 0.2,
+                duration: reduce ? 0 : 0.35,
               }}
             >
               <blockquote>“{t(item.quote)}”</blockquote>
@@ -295,46 +360,10 @@ export default function Home() {
           <PropertyGrid properties={properties.filter((p) => p.featured)} singleRow />
         </Reveal>
         <Categories compact singleRow />
-        <div className="home-pair home-story-pair">
-          <section className="story-section">
-            <div>
-              <h2>
-                {t('More Than Properties.')}
-                <br />
-                {t('A Better Future.')}
-              </h2>
-              <p>
-                {t(
-                  'At Dubai bayt, we connect global investors with exceptional real estate opportunities in one of the world’s most dynamic cities.',
-                )}
-              </p>
-              <Button light to="/about">
-                {t('Our story')}
-              </Button>
-              <StoryPoints />
-            </div>
-            <div className="story-image">
-              <Photo src={siteConfig.images.villa} alt={t('Modern villa framed by palms')} />
-              <blockquote>
-                {t('“Where')}
-                <br />
-                {t('opportunity')}
-                <br />
-                {t('meets')}
-                <br />
-                {t('extraordinary')}
-                <br />
-                {t('living.”')}
-                <span>―</span>
-              </blockquote>
-            </div>
-          </section>
-          <LocationsPanel />
-        </div>
-        <div className="home-pair home-investment-pair">
-          <InvestmentBenefits compact />
-          <Testimonials />
-        </div>
+        <StoryShowcase />
+        <InvestmentBenefits showcase />
+        <LocationsPanel />
+        <Testimonials />
         <DubaiHighlights />
       </div>
       <FinalCTA />
