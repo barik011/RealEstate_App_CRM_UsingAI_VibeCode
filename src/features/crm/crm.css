@@ -1588,3 +1588,35 @@
   padding: 16px 0;
   border-bottom: 1px solid var(--color-crm-dialog-border);
 }
+
+/* Keep every navigation entry reachable in short desktop and mobile viewports. */
+.crm-sidebar {
+  height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-crm-nav-caption) var(--color-crm-sidebar);
+}
+.crm-sidebar > * {
+  flex-shrink: 0;
+}
+.crm-sidebar nav {
+  flex-shrink: 0;
+}
+.crm-drawer {
+  max-height: calc(85dvh - 85px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.website-highlights-editor {
+  padding: 18px;
+  border: 1px solid var(--color-crm-dialog-border);
+  border-radius: 8px;
+}
+.website-highlights-editor summary {
+  cursor: pointer;
+  margin-bottom: 16px;
+}

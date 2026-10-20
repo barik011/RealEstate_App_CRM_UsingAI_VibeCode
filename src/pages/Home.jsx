@@ -1,3 +1,4 @@
+import DubaiHighlights from '../components/sections/DubaiHighlights';
 import { useLanguage } from '../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -284,56 +285,57 @@ export default function Home() {
     <>
       <SEO title={t('Luxury Properties in Dubai')} />
       <Hero />
-      <div className="home-editorial">
+      <div className="home-layout">
         <Reveal className="featured-section">
           <SectionHeader
             title={t('Featured Properties')}
             subtitle={t('EXCLUSIVE HOMES, EXCEPTIONAL OPPORTUNITIES')}
             to="/properties"
           />
-          <PropertyGrid properties={properties.filter((p) => p.featured)} />
+          <PropertyGrid properties={properties.filter((p) => p.featured)} singleRow />
         </Reveal>
-        <section className="story-section">
-          <div>
-            <h2>
-              {t('More Than Properties.')}
-              <br />
-              {t('A Better Future.')}
-            </h2>
-            <p>
-              {t(
-                'At Dubai bayt, we connect global investors with exceptional real estate opportunities in one of the world’s most dynamic cities.',
-              )}
-            </p>
-            <Button light to="/about">
-              {t('Our story')}
-            </Button>
-            <StoryPoints />
-          </div>
-          <div className="story-image">
-            <Photo src={siteConfig.images.villa} alt={t('Modern villa framed by palms')} />
-            <blockquote>
-              {t('“Where')}
-              <br />
-              {t('opportunity')}
-              <br />
-              {t('meets')}
-              <br />
-              {t('extraordinary')}
-              <br />
-              {t('living.”')}
-              <span>―</span>
-            </blockquote>
-          </div>
-        </section>
-      </div>
-      <Reveal className="home-discover">
-        <Categories compact />
-        <InvestmentBenefits compact />
-      </Reveal>
-      <div className="home-community">
-        <LocationsPanel />
-        <Testimonials />
+        <Categories compact singleRow />
+        <div className="home-pair home-story-pair">
+          <section className="story-section">
+            <div>
+              <h2>
+                {t('More Than Properties.')}
+                <br />
+                {t('A Better Future.')}
+              </h2>
+              <p>
+                {t(
+                  'At Dubai bayt, we connect global investors with exceptional real estate opportunities in one of the world’s most dynamic cities.',
+                )}
+              </p>
+              <Button light to="/about">
+                {t('Our story')}
+              </Button>
+              <StoryPoints />
+            </div>
+            <div className="story-image">
+              <Photo src={siteConfig.images.villa} alt={t('Modern villa framed by palms')} />
+              <blockquote>
+                {t('“Where')}
+                <br />
+                {t('opportunity')}
+                <br />
+                {t('meets')}
+                <br />
+                {t('extraordinary')}
+                <br />
+                {t('living.”')}
+                <span>―</span>
+              </blockquote>
+            </div>
+          </section>
+          <LocationsPanel />
+        </div>
+        <div className="home-pair home-investment-pair">
+          <InvestmentBenefits compact />
+          <Testimonials />
+        </div>
+        <DubaiHighlights />
       </div>
       <FinalCTA />
     </>

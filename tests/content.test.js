@@ -18,6 +18,14 @@ test('website content validation rejects duplicate slugs and unsafe public links
   const site = JSON.parse(readFileSync('src/data/site.json', 'utf8'));
   assert.equal(validateContent('site', site).brand, site.brand);
   assert.throws(
+    () =>
+      validateContent('site', {
+        ...site,
+        dubaiHighlights: [{ title: 'Card', description: 'Description', icon: 'invalid' }],
+      }),
+    /highlight/,
+  );
+  assert.throws(
     () => validateContent('site', { ...site, paginationSize: 0 }),
     /Properties per page/,
   );

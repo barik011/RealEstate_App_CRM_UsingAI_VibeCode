@@ -1,3 +1,4 @@
+import { defaultHighlights, highlightIcons } from '../../../config/dubaiHighlights';
 import { useEffect, useState } from 'react';
 import { contentService } from '../../../services/contentService';
 import { CONTENT_FIELDS, CONTENT_LABELS, validateContent } from '../../../services/contentRules';
@@ -108,6 +109,74 @@ export function Website() {
                     value={site.heroImages.join('\n')}
                     onChange={(e) => update({ ...site, heroImages: e.target.value.split('\n') })}
                   />
+                  <details className="crm-full website-highlights-editor">
+                    <summary>Dubai advantage section</summary>
+                    <div className="crm-stack">
+                      <label className="crm-check">
+                        <input
+                          type="checkbox"
+                          checked={site.highlightsEnabled !== false}
+                          onChange={(e) => update({ ...site, highlightsEnabled: e.target.checked })}
+                        />
+                        Show Dubai advantage section
+                      </label>
+                      <Field
+                        label="Advantage section title"
+                        value={site.highlightsTitle || ''}
+                        placeholder="A city of possibilities."
+                        onChange={(e) => update({ ...site, highlightsTitle: e.target.value })}
+                      />
+                      <Field
+                        label="Advantage section introduction"
+                        type="textarea"
+                        value={site.highlightsIntro || ''}
+                        onChange={(e) => update({ ...site, highlightsIntro: e.target.value })}
+                      />
+                      {(site.dubaiHighlights || defaultHighlights).map((item, index) => (
+                        <div className="crm-form-grid" key={index}>
+                          <Field
+                            label={`Highlight ${index + 1} icon`}
+                            options={highlightIcons.map((icon) => [icon, icon])}
+                            value={item.icon}
+                            onChange={(e) =>
+                              update({
+                                ...site,
+                                dubaiHighlights: (site.dubaiHighlights || defaultHighlights).map(
+                                  (v, i) => (i === index ? { ...v, icon: e.target.value } : v),
+                                ),
+                              })
+                            }
+                          />
+                          <Field
+                            label={`Highlight ${index + 1} title`}
+                            value={item.title}
+                            onChange={(e) =>
+                              update({
+                                ...site,
+                                dubaiHighlights: (site.dubaiHighlights || defaultHighlights).map(
+                                  (v, i) => (i === index ? { ...v, title: e.target.value } : v),
+                                ),
+                              })
+                            }
+                          />
+                          <Field
+                            label={`Highlight ${index + 1} description`}
+                            type="textarea"
+                            value={item.description}
+                            onChange={(e) =>
+                              update({
+                                ...site,
+                                dubaiHighlights: (site.dubaiHighlights || defaultHighlights).map(
+                                  (v, i) =>
+                                    i === index ? { ...v, description: e.target.value } : v,
+                                ),
+                              })
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </details>
                   {Object.entries(site.socials).map(([key, value]) => (
                     <Field
                       key={key}

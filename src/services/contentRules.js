@@ -47,6 +47,34 @@ export function validateContent(kind, data) {
   };
   if (kind === 'site') {
     if (
+      data?.dubaiHighlights !== undefined &&
+      (!Array.isArray(data.dubaiHighlights) ||
+        data.dubaiHighlights.length > 12 ||
+        data.dubaiHighlights.some(
+          (item) =>
+            !item ||
+            typeof item.title !== 'string' ||
+            !item.title.trim() ||
+            item.title.length > 120 ||
+            typeof item.description !== 'string' ||
+            !item.description.trim() ||
+            item.description.length > 500 ||
+            ![
+              'globe',
+              'business',
+              'building',
+              'waterfront',
+              'key',
+              'home',
+              'community',
+              'growth',
+            ].includes(item.icon),
+        ))
+    )
+      throw new Error(
+        'Each highlight needs an icon, title (up to 120 characters) and description (up to 500 characters).',
+      );
+    if (
       !data ||
       Array.isArray(data) ||
       !data.brand?.trim() ||

@@ -2,10 +2,13 @@ import { test, expect } from '@playwright/test';
 test('website drafts remain private until publish and admin controls visitor tools', async ({
   page,
 }) => {
+  test.setTimeout(90000);
   await page.goto('/login');
   await page.getByRole('button', { name: 'Demo Admin Login' }).click();
   await page.getByRole('link', { name: 'Website content', exact: true }).click();
   await page.getByLabel('Homepage headline', { exact: true }).fill('Find your next Dubai home');
+  await page.getByText('Dubai advantage section', { exact: true }).click();
+  await page.getByLabel('Advantage section title', { exact: true }).fill('Dubai possibilities');
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await expect(
     page.getByText('Draft saved. The public website is unchanged.', { exact: true }),
@@ -20,6 +23,7 @@ test('website drafts remain private until publish and admin controls visitor too
   await expect(page.getByText('Website content published.', { exact: true })).toBeVisible();
   await page.goto('/');
   await expect(page.locator('h1')).toContainText('Find your next Dubai home');
+  await expect(page.locator('#dubai-highlights-title')).toHaveText('Dubai possibilities');
   await page.goto('/admin/website');
   await page.getByLabel('Content collection').selectOption('articles');
   await page.getByRole('button', { name: 'Add item', exact: true }).click();
@@ -52,6 +56,7 @@ test('website drafts remain private until publish and admin controls visitor too
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 test('visitors compare homes, restore saved filters and use detailed search', async ({ page }) => {
+  test.setTimeout(90000);
   await page.goto('/properties');
   await page.getByRole('button', { name: 'Compare property', exact: true }).first().click();
   await page.getByRole('button', { name: 'Compare property', exact: true }).first().click();

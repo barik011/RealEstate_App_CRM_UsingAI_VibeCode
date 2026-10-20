@@ -106,9 +106,12 @@ export function PropertyCard({ property }) {
     </article>
   );
 }
-export function PropertyGrid({ properties, list = false }) {
+export function PropertyGrid({ properties, list = false, singleRow = false }) {
   return (
-    <div className={`property-grid ${list ? 'list-view' : ''}`}>
+    <div
+      className={`property-grid ${list ? 'list-view' : ''} ${singleRow ? 'single-row' : ''}`}
+      tabIndex={singleRow ? 0 : undefined}
+    >
       {properties.map((property) => (
         <PropertyCard key={property.id} property={property} />
       ))}

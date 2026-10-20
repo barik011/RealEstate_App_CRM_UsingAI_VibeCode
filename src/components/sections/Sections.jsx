@@ -4,7 +4,7 @@ import { Building2, Globe2, Landmark, ShieldCheck, TrendingUp, Handshake } from 
 import { useCatalog } from '../../hooks/useCatalog';
 import { siteConfig } from '../../config/siteConfig';
 import { Button, Photo, SectionHeader } from '../ui';
-export function Categories({ compact = false }) {
+export function Categories({ compact = false, singleRow = false }) {
   const { t } = useLanguage();
   const { categories } = useCatalog();
   return (
@@ -14,7 +14,10 @@ export function Categories({ compact = false }) {
         subtitle={t('Find a property that fits your lifestyle or investment goals.')}
         to="/properties"
       />
-      <div className="category-grid">
+      <div
+        className={`category-grid ${singleRow ? 'single-row' : ''}`}
+        tabIndex={singleRow ? 0 : undefined}
+      >
         {categories.map((c) => (
           <Link to={`/properties?type=${c.slug}`} className="category-card" key={c.slug}>
             <Photo src={c.image} alt={t(c.name)} />

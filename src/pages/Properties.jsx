@@ -142,6 +142,7 @@ function FilterPanel({ filters, update, reset, locations, categories, amenities 
           <label>
             {t('Amenity')}
             <select
+              aria-label={t('Amenity')}
               value={filters.amenity || ''}
               onChange={(e) => update('amenity', e.target.value)}
             >

@@ -53,7 +53,6 @@ export function SearchTools({ filters, onRestore }) {
                   id: crypto.randomUUID(),
                   name: name.trim(),
                   filters: {
-                    ...filters,
                     ...Object.fromEntries(new URLSearchParams(window.location.search)),
                     page: undefined,
                   },
