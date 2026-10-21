@@ -363,8 +363,9 @@ export default function Home() {
         <StoryShowcase />
         <InvestmentBenefits showcase />
         <LocationsPanel />
-        <Testimonials />
+        
         <DubaiHighlights />
+        <Testimonials />
       </div>
       <FinalCTA />
     </>

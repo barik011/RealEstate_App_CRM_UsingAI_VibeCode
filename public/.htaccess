@@ -1,3 +1,6 @@
+# Serve the Vite entry point at the domain root.
+DirectoryIndex index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
