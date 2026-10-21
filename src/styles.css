@@ -4110,3 +4110,46 @@ details p {
 .story-showcase .story-points button p {
   color: inherit;
 }
+
+/* Edge-to-edge backgrounds with content aligned to the page container. */
+.home-layout {
+  --home-gutter: var(--gutter);
+}
+.home-layout > .story-showcase,
+.home-layout > .locations-panel {
+  width: calc(100% + 2 * var(--home-gutter));
+  margin-inline: calc(-1 * var(--home-gutter));
+  padding-inline: var(--home-gutter);
+  border-radius: 0;
+}
+.home-layout .story-showcase > div:first-child {
+  padding-inline-start: 0;
+}
+.home-layout .featured-section .property-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+.home-layout .featured-section .property-card {
+  min-width: 0;
+}
+@media (max-width: 1100px) {
+  .home-layout .featured-section .property-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .home-layout .story-showcase > div:first-child {
+    padding-inline: 0;
+  }
+  .home-layout > .story-showcase {
+    padding-bottom: 32px;
+  }
+}
+@media (max-width: 600px) {
+  .home-layout {
+    --home-gutter: 20px;
+  }
+  .home-layout .featured-section .property-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

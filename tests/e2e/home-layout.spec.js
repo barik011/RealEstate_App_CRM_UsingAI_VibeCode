@@ -4,7 +4,7 @@ test('homepage full-width sections and story image controls stay responsive', as
   test.setTimeout(90000);
   await page.goto('/');
   await expect(page.locator('.highlight-card')).toHaveCount(8);
-  for (const selector of ['.featured-section .property-card', '.home-layout .category-card']) {
+  for (const selector of ['.home-layout .category-card']) {
     const tops = await page
       .locator(selector)
       .evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().top)));
@@ -22,8 +22,17 @@ test('homepage full-width sections and story image controls stay responsive', as
   expect(boxes).toHaveLength(4);
   for (let i = 1; i < boxes.length; i++) {
     expect(boxes[i].y).toBeGreaterThan(boxes[i - 1].bottom);
-    expect(boxes[i].width).toBeCloseTo(boxes[0].width, 0);
   }
+  const backgrounds = await page.locator('.home-layout > .story-showcase, .home-layout > .locations-panel').evaluateAll(items => items.map(item => ({ x: item.getBoundingClientRect().x, width: item.getBoundingClientRect().width })));
+  for (const box of backgrounds) {
+    expect(box.x).toBeCloseTo(0, 0);
+    expect(box.width).toBeCloseTo(1440, 0);
+  }
+  expect(
+    await page
+      .locator('.featured-section .property-grid')
+      .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length),
+  ).toBe(4);
   const storyButtons = page.locator('.story-points button');
   const images = new Set();
   for (let i = 0; i < 3; i++) {
@@ -42,8 +51,11 @@ test('homepage full-width sections and story image controls stay responsive', as
   await page.screenshot({ path: 'artifacts/homepage-new-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const row = page.locator('.featured-section .single-row');
-  expect(await row.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  expect(
+    await page
+      .locator('.featured-section .property-grid')
+      .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length),
+  ).toBe(1);
   await page.locator('.dubai-highlights').scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'artifacts/homepage-new-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'التبديل إلى العربية', exact: true }).first().click();

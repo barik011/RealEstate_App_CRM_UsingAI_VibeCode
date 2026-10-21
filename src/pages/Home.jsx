@@ -357,7 +357,7 @@ export default function Home() {
             subtitle={t('EXCLUSIVE HOMES, EXCEPTIONAL OPPORTUNITIES')}
             to="/properties"
           />
-          <PropertyGrid properties={properties.filter((p) => p.featured)} singleRow />
+          <PropertyGrid properties={properties.filter((p) => p.featured)} />
         </Reveal>
         <Categories compact singleRow />
         <StoryShowcase />
