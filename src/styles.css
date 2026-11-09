@@ -373,8 +373,8 @@ svg {
 }
 .hero-handwritten {
   position: absolute;
-  top: 22%;
-  inset-inline-start: 48%;
+  top: 40%;
+  inset-inline-start: 60%;
   font-size: var(--font-size-handwritten);
   line-height: 1.25;
   transform: rotate(-13deg);
